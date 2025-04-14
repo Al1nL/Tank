@@ -4,6 +4,9 @@
 class Tank;
 class Shell;
 class Mine;
+class GameManager;
+#include "Tank.h"
+
 using namespace std;
 
 struct Wall {
@@ -21,24 +24,29 @@ enum class OccupierType {
 
 class Cell{
     OccupierType occupierType; // Enum to track the current type
+    GameManager& gameManager;  // Reference to GameManager
+	pair<int,int> pos;
     union {
         Wall wall;
-        Tank tank;
-        Mine mine;
+        Tank* tank;
+        bool mine;
     };
     Shell* passingShell;
 public:
-    Cell();
-    Cell(OccupierType o);
-    ~Cell();
-    void destroyOccupier();
+    Cell(GameManager& gm);
+    Cell(OccupierType o, GameManager& gm);
+    void destroyOccupier(){occupierType == OccupierType::None;}
     bool isWalkable() const;
-    bool hasTank() const;
-    void setTank(Tank& tank);
+    Tank* getTank();
+    OccupierType getOccupierType() const { return occupierType; }
+    bool hasWall() const { return occupierType == OccupierType::Wall; }
+    void setTank(Tank& t) { tank = &t; occupierType = OccupierType::Tank; }
+	bool hasTank() const { return occupierType == OccupierType::Tank && tank != nullptr; }
     Shell* getShell() const;
     void setShell(Shell* shell);
     void damageWall();
+    bool WallIsGone() const; //returns true if wall is gone in the last step
 private:
-    void detectCollision(shell* other);
+    void detectCollision(Shell* other);
 };
 #endif

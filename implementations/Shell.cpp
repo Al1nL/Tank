@@ -6,10 +6,10 @@ void Shell::move(const GameBoard& board) {
         pair<int, int> sStep = nextStep(2, dir, board.getHeight(), board.getWidth());
         pos = {sStep.first, sStep.second};  // updated position after move
 }
-void Shell::goThroughWall(const pair<Cell*> cells) {
-        for (const Cell* c : cells) {
-                if (c.hasWall()) {
-                        c.damageWall();
+void Shell::goThroughWall(pair<Cell*,Cell*> cells) {
+        for (Cell* c : {cells.first, cells.second}){
+                if (c->hasWall()) {
+                        c->damageWall();
                 }
         }
 }

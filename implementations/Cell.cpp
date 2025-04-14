@@ -1,23 +1,25 @@
 ﻿#include "Cell.h"
 #include <new> // because of enum union use
 
-Cell::Cell() : occupierType(OccupierType::None), passingShell(nullptr) {}
-Cell::Cell(occupierType o) {
+Cell::Cell(GameManager& gameManager) : occupierType(OccupierType::None), passingShell(nullptr),gameManager(gameManager) {}
+Cell::Cell(OccupierType o,GameManager& gameManager) : gameManager(gameManager) {
   if (o == OccupierType::Wall) {
     occupierType = OccupierType::Wall;
     new (&wall) Wall();
   }
   else if (o == OccupierType::Mine) {
     occupierType = OccupierType::Mine;
-    new (&mine) Mine();
+    mine=true;
   }
 }
 void Cell::damageWall() {
     if (occupierType == OccupierType::Wall) {
         if (wall.getHealth() > 0) {
             wall.damageWall();
+            gameManager.logWallWeakened(pos);
         } else {
             destroyOccupier(); // Wall destroyed
+            gameManager.logWallDestroyed(pos);
         }
     }
 }
@@ -25,18 +27,6 @@ void Cell::damageWall() {
 // Check if walkable
 bool Cell::isWalkable() const {
     return occupierType == OccupierType::None;
-}
-
-// Check if it has a tank
-bool Cell::hasTank() const {
-    return occupierType == OccupierType::Tank;
-}
-
-// Set tank
-void Cell::setTank(Tank& newTank) {
-    destroyOccupier(); // Clear previous object first
-    new (&tank) Tank(newTank); // Placement new
-    occupierType = OccupierType::Tank;
 }
 
 // Get shell
@@ -51,9 +41,15 @@ void Cell::setShell(Shell* s) {
     else
         detectCollision(s);
 }
+Tank* Cell::getTank() {
+  if (hasTank()) {
+    return tank;
+  }
+    return nullptr;
 
+}
 // Handle collision
 void Cell::detectCollision(Shell* other) {
-    delete other;
+    gameManager.logShellsCollided(*passingShell, *other);
     passingShell = nullptr;
 }

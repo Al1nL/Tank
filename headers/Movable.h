@@ -2,6 +2,7 @@
 #define MOVABLE_H
 #include <utility> //for pair
 #include <vector>
+#include <string>
 using namespace std;
 
 class Movable{
@@ -9,6 +10,7 @@ class Movable{
     pair<int,int> pos;
 
   public:
+    Movable(pair<int,int> pos) : pos(pos) {};
     enum Direction { U, UR, R, DR, D, DL, L, UL };
     pair<int,int> nextStep(int step, Direction dir,const int rows,const int cols){
         static const vector<pair<int, int>> offsets = { // to match dir
@@ -21,5 +23,7 @@ class Movable{
         int newCol = wrap(pos.second + step * offsets[dir].second, cols);
         return {newRow, newCol};
       }
+          string getPosition() const {return "[" + to_string(pos.first) + "," + to_string(pos.second) + "]";}
+
   };
   #endif

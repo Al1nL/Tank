@@ -4,32 +4,38 @@
 #include "Movable.h"
 #include "GameBoard.h"
 #include "Shell.h"
+#include "Action.h"
+class GameManager;
 using namespace std;
 
 class Tank: public Movable {
+    GameManager& gameManager;  // Reference to GameManager
     int id;
     Direction dir;
     int remainingShells = 16;
-    int cooldown = 0; // after shooting
-    bool waitingToReverse = false;
-    int waitCounter = 0; // after requsting back movement
+    int shootCooldown = 0;
+    bool waitingForBackward = false;
+    int backwardCooldown = 0; // Number of turns left until backward move happens
+    bool cancelBackward = false; // Whether the backward move was canceled
+    bool movedBackwardLast = false; // to know if immediate next back is allowed
     vector<Shell*> firedShells;
+
 public:
-    Tank(){}  // Default constructor
-    Tank(int id, pair<int> position) : id(id), pos(position) {
+    Tank();  // Default constructor
+    Tank(int id, pair<int,int> position,GameManager& gm) : id(id), Movable(position),gameManager(gm) {
         dir = id==1 ? Direction::L : Direction::R;  // Assign initial direction based on id
     }
-    enum class Action {MoveFwd, MoveBack, Rotate1_8Left, Rotate1_4Left,Rotate1_8Right,Rotate1_4Right, Shoot};
-    abstract Action decideNextAction(const GameBoard&);
+    Action decideNextAction(const GameBoard&);
 
     void applyAction(Action, GameBoard&);
     void rotate(Direction,Action);
     void deleteShell(Shell*);
     bool isValidMove(const GameBoard& board,int row,int col);
-
+    vector<Shell*> getFiredShells() const { return firedShells; }
     int getRemainingShells()  {return remainingShells;}
-    int getCooldown() { return cooldown; }
-    int getWaitCounter()  { return waitCounter; }
-    int getWaitingToReverse() { return waitingToReverse; }
+    int isWaitingToShoot() { return shootCooldown>0; }
+    int getbBckwardCooldown()  { return backwardCooldown; }
+    bool isWaitingToReverse() { return waitingForBackward; }
+    int getID() const { return id; }
 };
 #endif

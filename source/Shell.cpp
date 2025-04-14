@@ -1,5 +1,4 @@
-﻿#include "Shell.h"
-#include <utility> //idk why it doesnt pass through shells.h
+﻿#include "../headers/Shell.h"
 
 void Shell::move(const GameBoard& board) {
         pair<int, int> fStep = nextStep(1, dir, board.getHeight(), board.getWidth());

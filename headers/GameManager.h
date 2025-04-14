@@ -2,12 +2,17 @@
 #define GAMEMANAGER_H
 #include <vector>
 #include <utility>
-#include "Tank.h"
+//#include "Tank.h"
+#include <iostream>
 #include <fstream>
 #include "Action.h"
 
-using namespace std;
+// Forward declarations
+class Tank;
 class GameBoard;
+class Shell;
+using namespace std;
+//class GameBoard;
 
 class GameManager{
     GameBoard* currGameState;
@@ -16,7 +21,7 @@ class GameManager{
     int stepCounter=0;
     int stepsSinceNoShells = 0;
     vector<string> logs;
-    std::ofstream logFile;
+    ofstream logFile;
 
     bool p1Lost=false;
     bool p2Lost=false;

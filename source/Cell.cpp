@@ -1,7 +1,9 @@
-﻿#include "Cell.h"
-#include <new> // because of enum union use
+﻿#include "../headers/Cell.h"
 
-Cell::Cell(GameManager& gameManager) : occupierType(OccupierType::None), passingShell(nullptr),gameManager(gameManager) {}
+Cell::Cell(GameManager& gameManager) : occupierType(OccupierType::None), passingShell(nullptr),gameManager(gameManager) {
+
+}
+
 Cell::Cell(OccupierType o,GameManager& gameManager) : gameManager(gameManager) {
   if (o == OccupierType::Wall) {
     occupierType = OccupierType::Wall;
@@ -12,6 +14,7 @@ Cell::Cell(OccupierType o,GameManager& gameManager) : gameManager(gameManager) {
     mine=true;
   }
 }
+
 void Cell::damageWall() {
     if (occupierType == OccupierType::Wall) {
         if (wall.getHealth() > 0) {
@@ -41,6 +44,7 @@ void Cell::setShell(Shell* s) {
     else
         detectCollision(s);
 }
+
 Tank* Cell::getTank() {
   if (hasTank()) {
     return tank;
@@ -49,7 +53,14 @@ Tank* Cell::getTank() {
 
 }
 // Handle collision
+//void Cell::detectCollision(Shell* other) {
+//    gameManager.logShellsCollided(*passingShell, *other);
+//    passingShell = nullptr;
+//}
+
 void Cell::detectCollision(Shell* other) {
     gameManager.logShellsCollided(*passingShell, *other);
+    delete passingShell; // Clean up current shell
+    delete other;        // Clean up colliding shell
     passingShell = nullptr;
 }

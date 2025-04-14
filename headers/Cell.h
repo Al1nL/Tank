@@ -1,12 +1,22 @@
 #ifndef CELL_H  // Header guard to prevent multiple inclusions
 #define CELL_H
-#include <vector>
-class Tank;
-class Shell;
-class Mine;
-class GameManager;
+//#include <vector>
+//#include "Shell.h"
+//class Tank;
+//class Shell;
+//class Mine;
+//class GameManager;
 #include "Tank.h"
 
+#include <vector>
+#include <utility> // For std::pair
+#include "Shell.h" // Needed for Shell pointer
+// Forward declarations
+//class Tank;
+class GameManager;
+//class Shell;
+
+using namespace std;
 using namespace std;
 
 struct Wall {

@@ -1,5 +1,6 @@
-#include "GameManager.h"
-#include <string>
+#include "../headers/GameManager.h"
+#include "../headers/Tank.h"
+#include "../headers/GameBoard.h"
 
 GameManager::GameManager(std::string filepath){
   currGameState = new GameBoard(filepath, *this);

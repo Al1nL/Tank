@@ -3,6 +3,8 @@
 #include <utility>
 class GameBoard;
 #include "GameManager.h"
+#include "Movable.h"
+#include "GameBoard.h"
 class Cell;
 
 class Shell : public Movable {

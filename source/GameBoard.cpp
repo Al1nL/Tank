@@ -1,8 +1,4 @@
-#include "GameBoard.h"
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
+#include "../headers/GameBoard.h"
 
 GameBoard::GameBoard(string filePath,GameManager& gm): gameManager(gm){
     ifstream file(filePath);

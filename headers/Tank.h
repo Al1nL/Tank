@@ -1,11 +1,14 @@
 ﻿#ifndef TANK_H
 #define TANK_H
 #include <utility>
+#include <vector>
 #include "Movable.h"
-#include "GameBoard.h"
-#include "Shell.h"
 #include "Action.h"
+
+// Forward declarations
+class GameBoard;
 class GameManager;
+class Shell;
 using namespace std;
 
 class Tank: public Movable {
@@ -32,10 +35,11 @@ public:
     void deleteShell(Shell*);
     bool isValidMove(const GameBoard& board,int row,int col);
     vector<Shell*> getFiredShells() const { return firedShells; }
-    int getRemainingShells()  {return remainingShells;}
+    int getRemainingShells()  const {return remainingShells;}
     int isWaitingToShoot() { return shootCooldown>0; }
-    int getbBckwardCooldown()  { return backwardCooldown; }
-    bool isWaitingToReverse() { return waitingForBackward; }
+    int getbBckwardCooldown()  const { return backwardCooldown; }
+    bool isWaitingToReverse() const { return waitingForBackward; }
     int getID() const { return id; }
+    Direction getDir() const { return dir; }
 };
 #endif

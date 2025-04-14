@@ -4,6 +4,7 @@
 #include <utility>
 #include "Cell.h"
 #include <string>
+#include <iostream>
 
 class Cell;
 

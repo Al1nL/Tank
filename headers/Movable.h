@@ -23,7 +23,7 @@ class Movable{
         int newCol = wrap(pos.second + step * offsets[dir].second, cols);
         return {newRow, newCol};
       }
-          string getPosition() const {return "[" + to_string(pos.first) + "," + to_string(pos.second) + "]";}
-
+    string getPosition() const {return "[" + to_string(pos.first) + "," + to_string(pos.second) + "]";}
+	pair<int,int> getPos() const {return pos;}
   };
   #endif

@@ -1,4 +1,4 @@
-﻿#include "Tank.h"
+﻿#include "../headers/Tank.h"
 
 void Tank::applyAction(Action action, GameBoard& board){
     //assuming its valid move

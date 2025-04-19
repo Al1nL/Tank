@@ -2,21 +2,20 @@
 #define CELL_H
 //#include <vector>
 //#include "Shell.h"
-//class Tank;
+// class Tank;
 //class Shell;
 //class Mine;
 //class GameManager;
-#include "Tank.h"
+// #include "Tank.h"
 
 #include <vector>
 #include <utility> // For std::pair
 #include "Shell.h" // Needed for Shell pointer
 // Forward declarations
-//class Tank;
+// class Tank;
 class GameManager;
-//class Shell;
+class Shell;
 
-using namespace std;
 using namespace std;
 
 struct Wall {
@@ -38,25 +37,29 @@ class Cell{
 	pair<int,int> pos;
     union {
         Wall wall;
-        Tank* tank;
         bool mine;
+        int tankId;
     };
-    Shell* passingShell;
+    Shell* passingShell = nullptr;
 public:
-    Cell(GameManager& gm);
-    Cell(OccupierType o, GameManager& gm);
-    void destroyOccupier(){occupierType == OccupierType::None;}
+    // Cell(GameManager& gm);
+    Cell(OccupierType o, GameManager& gm, int tankId = -1);
+    // void destroyOccupier(){occupierType == OccupierType::None;}
     bool isWalkable() const;
-    Tank* getTank();
+    int getTank();
+    void destroyOccupier(){occupierType= OccupierType::None, tankId = -1, wall=Wall(), mine=false;};
     OccupierType getOccupierType() const { return occupierType; }
     bool hasWall() const { return occupierType == OccupierType::Wall; }
-    void setTank(Tank& t) { tank = &t; occupierType = OccupierType::Tank; }
-	bool hasTank() const { return occupierType == OccupierType::Tank && tank != nullptr; }
+    void setTank(int tank) { tankId=tank ,occupierType = OccupierType::Tank; }
+	bool hasTank() const { return occupierType == OccupierType::Tank; }
     Shell* getShell() const;
     void setShell(Shell* shell);
+    bool hasShell() const {return passingShell != nullptr;};
     void damageWall();
     bool WallIsGone() const; //returns true if wall is gone in the last step
-private:
+//private:
     void detectCollision(Shell* other);
+
+    ~Cell(){ }; //if (passingShell != nullptr)  delete passingShell;
 };
 #endif

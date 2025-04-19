@@ -1,17 +1,18 @@
 ﻿#include "../headers/Cell.h"
 
-Cell::Cell(GameManager& gameManager) : occupierType(OccupierType::None), passingShell(nullptr),gameManager(gameManager) {
+//Cell::Cell(GameManager& gameManager) : occupierType(OccupierType::None), passingShell(nullptr),gameManager(gameManager) {
+//
+//}
 
-}
-
-Cell::Cell(OccupierType o,GameManager& gameManager) : gameManager(gameManager) {
+Cell::Cell(OccupierType o,GameManager& gameManager, int tank) : gameManager(gameManager) {
+  occupierType = o;
   if (o == OccupierType::Wall) {
-    occupierType = OccupierType::Wall;
     new (&wall) Wall();
   }
   else if (o == OccupierType::Mine) {
-    occupierType = OccupierType::Mine;
     mine=true;
+  }else if(o == OccupierType::Tank){
+    tankId=tank;
   }
 }
 
@@ -45,13 +46,14 @@ void Cell::setShell(Shell* s) {
         detectCollision(s);
 }
 
-Tank* Cell::getTank() {
+int Cell::getTank() {
   if (hasTank()) {
-    return tank;
+    return tankId;
   }
-    return nullptr;
+  return -1;
 
 }
+
 // Handle collision
 //void Cell::detectCollision(Shell* other) {
 //    gameManager.logShellsCollided(*passingShell, *other);

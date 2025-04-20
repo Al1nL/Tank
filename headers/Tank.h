@@ -3,10 +3,8 @@
 #include <utility>
 #include <vector>
 #include "Movable.h"
-// #include "Algorithm.h"
 #include "Action.h"
 #include "Shell.h"
-// #include "WinAlgorithm.h"
 
 // Forward declarations
 class GameBoard;

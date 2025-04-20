@@ -1,5 +1,6 @@
 ﻿#include "../headers/Tank.h"
 #include "../headers/WinAlgorithm.h"
+#include "../headers/BasicMoveAlgorithm.h"
 //void Tank::applyAction(Action action, GameBoard& board){
 //    //assuming its valid move
 //    switch(action){
@@ -47,7 +48,7 @@
 //}
 Tank::Tank(int id, pair<int,int> position,GameManager& gm) : id(id), Movable(position, id==1 ? Direction::L : Direction::R,1),gameManager(gm) {
           // Assign initial direction based on id
-        moveDecider = (Algorithm*) new WinAlgorithm(this);
+        moveDecider = id==1 ?(Algorithm*) new WinAlgorithm(this) : (Algorithm*) new BasicMoveAlgorithm(this);
         //id == 1 ? : new WinAlgorithm(this)
 }
 

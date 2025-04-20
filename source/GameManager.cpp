@@ -36,7 +36,7 @@ void GameManager::processStep() {
 
     //TODO: algo for moves
     Action action1 = player1->decideNextAction(player2->getPos(), *currGameState);
-    Action action2 = Action::MoveFwd; //player2->decideNextAction(player2->getPosition());
+    Action action2 = player2->decideNextAction(player1->getPos(), *currGameState);
 
     // validate and execute
     if (player1->isValidMove(*currGameState, action1)) {

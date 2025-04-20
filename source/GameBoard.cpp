@@ -3,8 +3,7 @@
 GameBoard::GameBoard(string filePath,GameManager& gm): gameManager(gm){
     ifstream file(filePath);
     if (!file) {
-        cerr << "Unable to open file: " << filePath << endl;
-        exit(1);  // Handle error appropriately
+        throw invalid_argument("File could not be opened");
     }
 
     // Read the dimensions of the grid
@@ -42,7 +41,7 @@ GameBoard::GameBoard(string filePath,GameManager& gm): gameManager(gm){
                     grid[row][col] = new Cell(OccupierType::None,gameManager);
                 break;
                 default:
-                    cerr << "Unknown symbol: " << symbol << " at position (" << row << "," << col << ")" << endl;
+                    throw invalid_argument( "Unknown symbol: " + to_string(symbol) + " at position (" + to_string(row) + "," + to_string(col) + ")" );
                 break;
             }
         }

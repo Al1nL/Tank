@@ -9,14 +9,13 @@
 
 
 class Cell;
-// class GameManager;
 using namespace std;
 
 class GameBoard{
-  // GameManager& gameManager;  // Reference to GameManager
     int width=0;
     int height=0;
     vector<vector<Cell*>> grid;
+
 public:
     GameBoard();
     GameBoard(string filePath);
@@ -26,7 +25,9 @@ public:
     int getHeight() const { return height; }
     void updateBoard(pair<int,int> oldPos, pair<int,int> newPos);
     vector<Cell*> getCells(pair<int,int> from, pair<int,int> offset,int amount);
-
+    int positiveMod(int dividend, int divisor) const{
+        return ((dividend % divisor) + divisor) % divisor;
+    }
     //for debug
     void printBoard();
 

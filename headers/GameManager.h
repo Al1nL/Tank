@@ -52,9 +52,11 @@ void logShellAction(Shell&, const std::string&);
     void logWallDestroyed(const pair<int, int>& pos);
     void logShellsCollided(Shell& shell1, Shell& shell2);
     void logShellHitTank(Shell& shell, Tank& tank);
+    void logTankOnMine(Tank& tank, const pair<int, int>& pos);
+    void logTankOnTank(Tank& tank, const pair<int, int>& pos);
 	void writeOutput();
     string actionToString(Action);
-
+    void moveFiredShells(Tank&);
     //for debug
     void printCurrentState();
 

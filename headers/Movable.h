@@ -19,14 +19,14 @@ class Movable{
   public:
     Movable(pair<int,int> pos, Direction dir, int step) : pos(pos), dir(dir), perStep(step){};
 
-    pair<int,int> nextStep(bool forward,const int rows){
+    pair<int,int> nextStep(bool forward,const int rows, const int cols){
         int side = forward ? -1 : 1;
 
-        // auto wrap = [](int value, int size) { return (value % size + size) % size; }; // lambda to wrap-around
+        auto wrap = [](int value, int size) { return (value % size + size) % size; }; // lambda to wrap-around
 
-        int newRow = pos.first + perStep * offsets[dir].first * side;
-        int newCol = pos.second + perStep * offsets[dir].second * side;
-        return {newRow % rows, newCol};
+        int newRow = wrap(pos.first + perStep * offsets[dir].first * side, rows);
+        int newCol = wrap(pos.second + perStep * offsets[dir].second * side,cols);
+        return {newRow , newCol };
       }
     string getPosition() const {return "[" + to_string(pos.first) + "," + to_string(pos.second) + "]";}
 	pair<int,int> getPos() const {return pos;}

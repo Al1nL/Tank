@@ -24,7 +24,7 @@ Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) 
     }
 
     // Move forward if aligned
-    if (currentRow != targetRow || currentCol != targetCol && (board.at(player->nextStep(true,board.getHeight()))).getOccupierType() != OccupierType::Mine){
+    if (currentRow != targetRow || currentCol != targetCol && (board.at(player->nextStep(true,board.getHeight(),board.getWidth()))).getOccupierType() != OccupierType::Mine){
         return Action::MoveFwd;
     }
 
@@ -94,6 +94,7 @@ bool WinAlgorithm::isInDanger(const GameBoard& board) {
     for(int i =1; i<= 2; i++){
         for (const auto& pos : offsets) {
             newP = {curr.first + pos.first*i, curr.second + pos.second*i};
+			newP = {board.positiveMod(newP.first, board.getHeight()), board.positiveMod(newP.second, board.getWidth())};
             if(board.at(newP).hasShell()){
               return true;
             }

@@ -18,7 +18,6 @@ public:
 
     // void move(GameBoard& board);
     // bool goThroughCells(const vector<Cell*> cells);
-	bool isValidMove(const GameBoard& board); //idk if needed?? i think only relevant for tanks
     int getOwnerID() const { return ownerID; }
     pair<int,int> getOffset() const { return offset; }
 };

@@ -53,7 +53,7 @@ Tank::Tank(int id, pair<int,int> position) : id(id), Movable(position, id==1 ? D
 }
 
 void Tank::addShell(){
-    firedShells.push_back(new Shell(getPos(),dir,id));
+    firedShells.push_back(new Shell({pos.first+offsets[dir].first, pos.second+offsets[dir].second},dir,id));
 }
 
 void Tank::rotate(Action action) {
@@ -104,12 +104,12 @@ bool Tank::isValidMove(const GameBoard& board,Action action){
           return !isWaitingToShoot() && getRemainingShells() > 0;
         case Action::MoveFwd:
             //check for a wall? what else?
-        	newPos = nextStep(true,board.getHeight());
+        	newPos = nextStep(true,board.getHeight(), board.getWidth());
             if(newPos.second >=  board.getWidth() || newPos.second < 0) return false;
             occupier = board.at(newPos).getOccupierType();
 			return occupier != OccupierType::Tank && occupier != OccupierType::Wall;
         case Action::MoveBack: //if not waiting for backward move - it's legal?
-          	newPos = nextStep(false, board.getHeight());
+          	newPos = nextStep(false, board.getHeight(), board.getWidth());
            	if(newPos.second >=  board.getWidth() || newPos.second < 0) return false;
             occupier = board.at(newPos).getOccupierType();
         	return !isWaitingToReverse() && occupier != OccupierType::Tank && occupier != OccupierType::Wall;
@@ -122,11 +122,7 @@ bool Tank::isValidMove(const GameBoard& board,Action action){
             return false;
     }
 }
-//void moveFiredShells(GameBoard& board){
-//  for(Shell* shell : firedShells){
-//		shell->move(board);
-// 	}
-//}
+
 
 Tank::~Tank(){
 

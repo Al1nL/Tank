@@ -6,8 +6,15 @@ GameBoard::GameBoard(string filePath){
         throw invalid_argument("File could not be opened");
     }
 
-    // Read the dimensions of the grid
-    file >> width >> height;
+   ofstream errorLog("input_errors.txt");
+	bool hasErrors = false;
+
+	// Read the dimensions of the grid
+	file >> width >> height;
+	if (file.fail()) {
+    	throw invalid_argument("Failed to read board dimensions");
+	}
+
 
     // Initialize the grid with the given dimensions
     grid.resize(height, vector<Cell*>(width));
@@ -16,37 +23,85 @@ GameBoard::GameBoard(string filePath){
     file.ignore();
 
     string line;
+    bool usedTanks[2] = {false, false};
+
     for (int row = 0; row < height; ++row) {
-        getline(file, line);
+        if (!getline(file, line)) {
+            // Fill missing rows with empty spaces
+            for (int col = 0; col < width; ++col) {
+                grid[row][col] = new Cell(OccupierType::None,{row,col});
+            }
+            hasErrors = true;
+            if (errorLog) errorLog << "Row " << row << " is missing. Filling with empty cells.\n";
+            continue;
+        }
         for (int col = 0; col < width; ++col) {
-            char symbol = line[col];
+            char symbol = (col < line.size()) ? line[col] : ' ';
 
             // Set the occupier type and initialize the cell accordingly
             switch (symbol) {
                 case '#':  // Wall
-                    grid[row][col] = new Cell(OccupierType::Wall);
+                    grid[row][col] = new Cell(OccupierType::Wall, {row,col});
                 break;
                 case '1':  // Tank 1
-                    grid[row][col] = new Cell(OccupierType::Tank, 1);
-                // Initialize Tank 1 at this cell if needed
-                break;
-                case '2':  // Tank 2
-                    grid[row][col] = new Cell(OccupierType::Tank,2);
-                // Initialize Tank 2 at this cell if needed
+                case '2': { // Tank 2
+                  	int tankID = symbol - '0';
+                    if(usedTanks[tankID-1]) {
+                      grid[row][col] = new Cell(OccupierType::None,{row,col});
+                      hasErrors = true;
+                      if (errorLog) errorLog << "Duplicate tank " << tankID << " found at (" << row << ", " << col << "). Ignoring it.\n";
+                    }else{
+                    	grid[row][col] = new Cell(OccupierType::Tank,{row,col}, tankID);
+                        usedTanks[tankID-1] = true;
+					}
+                }// Initialize Tank 1 at this cell if needed
                 break;
                 case '@':  // Mine
-                    grid[row][col] = new Cell(OccupierType::Mine);
+                    grid[row][col] = new Cell(OccupierType::Mine,{row,col});
                 break;
                 case ' ':  // Empty space (None)
-                    grid[row][col] = new Cell(OccupierType::None);
+                    grid[row][col] = new Cell(OccupierType::None,{row,col});
                 break;
                 default:
-                    throw invalid_argument( "Unknown symbol: " + to_string(symbol) + " at position (" + to_string(row) + "," + to_string(col) + ")" );
+                    hasErrors = true;
+                    if (errorLog) errorLog << "Unknown symbol '" << symbol << "' at (" << row << ", " << col << "). Treating as empty space.\n";
+                    grid[row][col] = new Cell(OccupierType::None,{row,col});
                 break;
             }
         }
+
+         // Fill missing columns in the row with empty spaces
+        for (int col = line.size(); col < width; ++col) {
+            grid[row][col] = new Cell(OccupierType::None,{row,col});
+            hasErrors = true;
+            if (errorLog) errorLog << "Column " << col << " in row " << row << " is missing. Filling with empty cell.\n";
+        }
+
+        if(line.size() > width) {
+          hasErrors = true;
+          if (errorLog) errorLog << line.size() - width << " Excess Columns " << "in row " << row << " found. Ignoring it.\n";
+        }
+    }
+
+    // Handle excess rows
+    int rowIndex = height;
+    while (getline(file, line)) {
+        hasErrors = true;
+        ++rowIndex;
+    }
+	if (errorLog && rowIndex - height >0) errorLog << rowIndex - height << " Excess rows " << " found. Ignoring it.\n";
+
+     if (!hasErrors && errorLog) {
+        errorLog.close(); // Delete file if no errors were logged
+        remove("input_errors.txt");
+    }
+
+    if(!usedTanks[0] || !usedTanks[1]) {
+      throw invalid_argument("Player missing. Game can not start!");
     }
 }
+
+
 pair<int, int> GameBoard::getTankPosition(int tankId) {
     for (int row = 0; row < height; ++row) {
         for (int col = 0; col < width; ++col) {
@@ -62,30 +117,26 @@ pair<int, int> GameBoard::getTankPosition(int tankId) {
 
 void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos){
   	Cell old = *grid[oldPos.first][oldPos.second];
-	OccupierType oldOccupier=  grid[oldPos.first][oldPos.second]->getOccupierType();
+//	OccupierType oldOccupier=  grid[oldPos.first][oldPos.second]->getOccupierType();
 //
-    if(newPos.first != -1 && newPos.second != -1){
-
-    	switch (oldOccupier){
-      		case OccupierType::Tank:
-        		grid[newPos.first][newPos.second]->setTank(old.getTank());
-    			break;
-            case OccupierType::Wall:
-              	grid[newPos.first][newPos.second]->damageWall();
-                break;
-
-        }
-        if(old.hasShell()){
-             grid[newPos.first][newPos.second]->setShell(old.getShell());
-        }
+    if(newPos.first == -1 && newPos.second == -1){
+        grid[oldPos.first][oldPos.second]->destroyOccupier();
+        return;
     }
-    grid[oldPos.first][oldPos.second]->destroyOccupier();
+    if(old.hasTank()){
+        grid[newPos.first][newPos.second]->setTank(old.getTank());
+        grid[oldPos.first][oldPos.second]->destroyOccupier();
+    }
+    else if(old.hasShell()){
+         grid[newPos.first][newPos.second]->setShell(old.getShell());
+         grid[oldPos.first][oldPos.second]->setShell(nullptr);
+    }
 }
 
 vector<Cell*> GameBoard::getCells(pair<int,int> from, pair<int,int> offset,int amount){
   vector<Cell*> cells;
   for(int i =1; i <= amount; i++){
-    	cells.push_back(grid[from.first+offset.first*i][from.second+offset.second*i]);
+    	cells.push_back(grid[positiveMod(from.first+offset.first*i, height)][positiveMod(from.second+offset.second*i, width)]);
     }
   return cells;
 }
@@ -122,6 +173,6 @@ void GameBoard::printBoard(){
             break;
       }
     }
-    cout << endl;
+    cout <<endl;
   }
 }

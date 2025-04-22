@@ -29,12 +29,12 @@ class Cell{
     union {
         Wall wall;
         bool mine;
-        int tankId;
+        int tankId =-1;
     };
     Shell* passingShell = nullptr;
 public:
     // Cell(GameManager& gm);
-    Cell(OccupierType o, int tankId = -1);
+    Cell(OccupierType o,pair<int,int> pos, int tankId = -1);
     // void destroyOccupier(){occupierType == OccupierType::None;}
     bool isWalkable() const;
     int getTank();

@@ -4,8 +4,9 @@
 //
 //}
 
-Cell::Cell(OccupierType o, int tank){
+Cell::Cell(OccupierType o,pair<int,int> poss, int tank){
   occupierType = o;
+  pos = poss;
   if (o == OccupierType::Wall) {
     new (&wall) Wall();
   }
@@ -40,8 +41,8 @@ Shell* Cell::getShell() const {
 void Cell::setShell(Shell* s) {
     if (passingShell == nullptr)
         passingShell = s;
-    else
-        detectCollision(s);
+//    else
+//        detectCollision(s);
 }
 
 int Cell::getTank() {

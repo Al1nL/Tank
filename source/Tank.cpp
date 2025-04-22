@@ -46,7 +46,7 @@
 //    if(action != Action::Shoot)
 //      shootCooldown--;
 //}
-Tank::Tank(int id, pair<int,int> position,GameManager& gm) : id(id), Movable(position, id==1 ? Direction::L : Direction::R,1),gameManager(gm) {
+Tank::Tank(int id, pair<int,int> position) : id(id), Movable(position, id==1 ? Direction::L : Direction::R,1) {
           // Assign initial direction based on id
         moveDecider = id==1 ?(Algorithm*) new WinAlgorithm(this) : (Algorithm*) new BasicMoveAlgorithm(this);
         //id == 1 ? : new WinAlgorithm(this)

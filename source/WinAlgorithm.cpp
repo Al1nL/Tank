@@ -3,10 +3,6 @@
 //
 #include "../headers/WinAlgorithm.h"
 
-vector<pair<int, int>> WinAlgorithm::getNeighbors(int x, int y) {
-    return {{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}};
-}
-
 Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) {
     auto [currentRow, currentCol] = player->getPos();
     auto [targetRow, targetCol] = opponentPos;

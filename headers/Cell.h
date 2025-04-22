@@ -1,19 +1,11 @@
 #ifndef CELL_H  // Header guard to prevent multiple inclusions
 #define CELL_H
-//#include <vector>
-//#include "Shell.h"
-// class Tank;
-//class Shell;
-//class Mine;
-//class GameManager;
-// #include "Tank.h"
 
 #include <vector>
 #include <utility> // For std::pair
 #include "Shell.h" // Needed for Shell pointer
 // Forward declarations
 // class Tank;
-class GameManager;
 class Shell;
 
 using namespace std;
@@ -33,7 +25,6 @@ enum class OccupierType {
 
 class Cell{
     OccupierType occupierType; // Enum to track the current type
-    GameManager& gameManager;  // Reference to GameManager
 	pair<int,int> pos;
     union {
         Wall wall;
@@ -43,10 +34,11 @@ class Cell{
     Shell* passingShell = nullptr;
 public:
     // Cell(GameManager& gm);
-    Cell(OccupierType o, GameManager& gm, int tankId = -1);
+    Cell(OccupierType o, int tankId = -1);
     // void destroyOccupier(){occupierType == OccupierType::None;}
     bool isWalkable() const;
     int getTank();
+    pair<int,int> getPos() const {return pos;}
     void destroyOccupier(){occupierType= OccupierType::None, tankId = -1, wall=Wall(), mine=false;};
     OccupierType getOccupierType() const { return occupierType; }
     bool hasWall() const { return occupierType == OccupierType::Wall; }

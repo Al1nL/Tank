@@ -3,9 +3,9 @@
 #include "../headers/GameBoard.h"
 
 GameManager::GameManager(std::string filepath){
-  currGameState = new GameBoard(filepath, *this);
-  player1 = new Tank(1, currGameState->getTankPosition(1), *this);
-  player2 = new Tank(2, currGameState->getTankPosition(2), *this);
+  currGameState = new GameBoard(filepath);
+  player1 = new Tank(1, currGameState->getTankPosition(1));
+  player2 = new Tank(2, currGameState->getTankPosition(2));
   logGameStart();
 }
 
@@ -33,8 +33,6 @@ void GameManager::processStep() {
     	}
     }
 
-
-    //TODO: algo for moves
     Action action1 = player1->decideNextAction(player2->getPos(), *currGameState);
     Action action2 = player2->decideNextAction(player1->getPos(), *currGameState);
 
@@ -171,14 +169,16 @@ void GameManager::goThroughCells(vector<Cell*> cells, Shell* shell) {
     if(c->hasShell()) {
       	c->getShell()->getOwnerID() == 1 ? player1->deleteShell(c->getShell()) : player2->deleteShell(c->getShell());
 		shell->getOwnerID() ==1 ? player1->deleteShell(c->getShell()) : player2->deleteShell(c->getShell());
+        logShellsCollided(*shell, *c->getShell());
+        return;
     }
     switch (occupier) {
       case OccupierType::Tank:
         c->getTank() == 1 ? logShellHitTank(*shell,*player1) : logShellHitTank(*shell,*player2);
-
-        break;
+		return;
       case OccupierType::Wall:
         c->damageWall();
+        c->getOccupierType() != OccupierType::None ? logWallWeakened(c->getPos()) : logWallDestroyed(c->getPos());
          break;
 
     }

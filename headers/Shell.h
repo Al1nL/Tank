@@ -2,15 +2,12 @@
 #define SHELL_H
 #include <utility>
 class GameBoard;
-#include "GameManager.h"
 #include "Movable.h"
-#include "GameBoard.h"
 class Cell;
 
 class Shell : public Movable {
     int ownerID=-1;
     pair<int,int> offset;
-//    GameManager& game_manager;  // Reference to GameManager
 
 public:
     Shell(pair<int,int> pos, Direction dir, int ownerID) : Movable(pos,dir,2), ownerID(ownerID) {

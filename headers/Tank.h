@@ -5,10 +5,10 @@
 #include "Movable.h"
 #include "Action.h"
 #include "Shell.h"
+#include "GameBoard.h"
 
 // Forward declarations
 class GameBoard;
-class GameManager;
 class Algorithm;
 // class WinAlgorithm;
 class Shell;
@@ -16,7 +16,6 @@ class Shell;
 using namespace std;
 
 class Tank: public Movable {
-    GameManager& gameManager;  // Reference to GameManager
     int id;
     int remainingShells = 16;
     int shootCooldown = 0;
@@ -29,7 +28,7 @@ class Tank: public Movable {
 
 public:
     Tank();  // Default constructor
-    Tank(int id, pair<int,int> position,GameManager& gm);
+    Tank(int id, pair<int,int> position);
 
     Action decideNextAction(const pair<int,int> opponentPos,const GameBoard& board);
 

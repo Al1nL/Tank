@@ -4,7 +4,7 @@
 //
 //}
 
-Cell::Cell(OccupierType o,GameManager& gameManager, int tank) : gameManager(gameManager) {
+Cell::Cell(OccupierType o, int tank){
   occupierType = o;
   if (o == OccupierType::Wall) {
     new (&wall) Wall();
@@ -20,10 +20,8 @@ void Cell::damageWall() {
     if (occupierType == OccupierType::Wall) {
         if (wall.getHealth() > 0) {
             wall.damageWall();
-            gameManager.logWallWeakened(pos);
         } else {
             destroyOccupier(); // Wall destroyed
-            gameManager.logWallDestroyed(pos);
         }
     }
 }
@@ -61,7 +59,6 @@ int Cell::getTank() {
 //}
 
 void Cell::detectCollision(Shell* other) {
-    gameManager.logShellsCollided(*passingShell, *other);
     delete passingShell; // Clean up current shell
     delete other;        // Clean up colliding shell
     passingShell = nullptr;

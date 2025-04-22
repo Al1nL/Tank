@@ -34,41 +34,6 @@ class Movable{
     Direction getDir() const { return dir; }
     void setDir(Direction d) { dir = d; }
     int getSteps() const { return perStep; }
-    
- //    pair<int,int> moveForward(int tunnelSize) {
- //    	pair<int,int> newPos = getPos();
- //  		switch (dir) {
- //    		case Direction::U:    newPos = {pos.first - 1, pos.second}; break;
- //    		case Direction::D:    newPos = {pos.first + 1, pos.second}; break;
- //    		case Direction::L:    newPos = {pos.first, pos.second - 1}; break;
- //    		case Direction::R:    newPos = {pos.first, pos.second + 1}; break;
- //    		case Direction::UR:   newPos = {pos.first - 1, pos.second + 1}; break;
- //    		case Direction::DR:   newPos = {pos.first + 1, pos.second + 1}; break;
- //    		case Direction::DL:   newPos = {pos.first + 1, pos.second - 1}; break;
- //    		case Direction::UL:   newPos = {pos.first - 1, pos.second - 1}; break;
- //
- //  		}
- //  		newPos.first = newPos.first % tunnelSize;
- //    	return newPos;
-	// }
- //
-	// pair<int,int> moveBackward(int tunnelSize) {
- //    	pair<int,int> newPos = getPos();
- //    	switch (dir) {
- //    		case Direction::U:    newPos = {pos.first + 1, pos.second}; break;
- //    		case Direction::D:    newPos = {pos.first - 1, pos.second}; break;
- //    		case Direction::L:    newPos = {pos.first, pos.second + 1}; break;
- //    		case Direction::R:    newPos = {pos.first, pos.second - 1}; break;
- //    		case Direction::UR:   newPos = {pos.first + 1, pos.second - 1}; break;
- //    		case Direction::DR:   newPos = {pos.first - 1, pos.second - 1}; break;
- //    		case Direction::DL:   newPos = {pos.first - 1, pos.second + 1}; break;
- //    		case Direction::UL:   newPos = {pos.first + 1, pos.second + 1}; break;
- //
- //    	}
- //    	newPos.first = newPos.first % tunnelSize;
- //    	return newPos;
- //    }
-
   };
 
 

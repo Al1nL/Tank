@@ -6,6 +6,7 @@
 #define BASICMOVEALGORITHM_H
 #include "Algorithm.h"
 class Tank;
+class GameBoard;
 using namespace std;
 
 class BasicMoveAlgorithm : public Algorithm {

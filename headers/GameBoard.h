@@ -4,22 +4,22 @@
 #include <utility>
 #include <string>
 #include <iostream>
-// #include "GameManager.h"
+#include <fstream>
 #include "Cell.h"
 
 
 class Cell;
-class GameManager;
+// class GameManager;
 using namespace std;
 
 class GameBoard{
-  GameManager& gameManager;  // Reference to GameManager
+  // GameManager& gameManager;  // Reference to GameManager
     int width=0;
     int height=0;
     vector<vector<Cell*>> grid;
 public:
     GameBoard();
-    GameBoard(string filePath, GameManager& gm);
+    GameBoard(string filePath);
     pair<int,int> getTankPosition(int tankId);
     Cell& at(pair<int,int> pos) const {    return *grid[pos.first][pos.second];}
     int getWidth() const { return width; }

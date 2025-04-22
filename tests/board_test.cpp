@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../include/Board.h"
+#include "../headers/GameBoard.h"
 #include "../include/Tank.h"
 #include "../include/Wall.h"
 #include "../include/Mine.h"

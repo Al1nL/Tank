@@ -1,6 +1,6 @@
 #include "../headers/GameBoard.h"
 
-GameBoard::GameBoard(string filePath,GameManager& gm): gameManager(gm){
+GameBoard::GameBoard(string filePath){
     ifstream file(filePath);
     if (!file) {
         throw invalid_argument("File could not be opened");
@@ -24,21 +24,21 @@ GameBoard::GameBoard(string filePath,GameManager& gm): gameManager(gm){
             // Set the occupier type and initialize the cell accordingly
             switch (symbol) {
                 case '#':  // Wall
-                    grid[row][col] = new Cell(OccupierType::Wall,gameManager);
+                    grid[row][col] = new Cell(OccupierType::Wall);
                 break;
                 case '1':  // Tank 1
-                    grid[row][col] = new Cell(OccupierType::Tank,gameManager, 1);
+                    grid[row][col] = new Cell(OccupierType::Tank, 1);
                 // Initialize Tank 1 at this cell if needed
                 break;
                 case '2':  // Tank 2
-                    grid[row][col] = new Cell(OccupierType::Tank,gameManager,2);
+                    grid[row][col] = new Cell(OccupierType::Tank,2);
                 // Initialize Tank 2 at this cell if needed
                 break;
                 case '@':  // Mine
-                    grid[row][col] = new Cell(OccupierType::Mine,gameManager);
+                    grid[row][col] = new Cell(OccupierType::Mine);
                 break;
                 case ' ':  // Empty space (None)
-                    grid[row][col] = new Cell(OccupierType::None,gameManager);
+                    grid[row][col] = new Cell(OccupierType::None);
                 break;
                 default:
                     throw invalid_argument( "Unknown symbol: " + to_string(symbol) + " at position (" + to_string(row) + "," + to_string(col) + ")" );
@@ -54,10 +54,6 @@ pair<int, int> GameBoard::getTankPosition(int tankId) {
                 if (tankId == grid[row][col]->getTank()) {
                     return {row, col};
                 }
-
-//                else if (tankId == 2 && grid[row][col]->getTank() == 2) {
-//                    return {row, col};
-//                }
             }
         }
     }
@@ -84,24 +80,6 @@ void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos){
         }
     }
     grid[oldPos.first][oldPos.second]->destroyOccupier();
-
-//	for (int row = 0; row < height; ++row) {
-//        for (int col = 0; col < width; ++col) {
-//            oldOccupier = grid[row][col]->getOccupierType();
-//            switch (oldOccupier){
-//      			case OccupierType::Tank:
-//        			grid[newPos.first][newPos.second]->setTank(old.getTank());
-//    				break;
-//            	case OccupierType::Wall:
-//              		grid[newPos.first][newPos.second]->damageWall();
-//                	break;
-//            	case OccupierType::Shell:
-//              		grid[newPos.first][newPos.second]->setShell(old.getShell());
-//                	break;
-//        	}
-//
-//        }
-//    }
 }
 
 vector<Cell*> GameBoard::getCells(pair<int,int> from, pair<int,int> offset,int amount){

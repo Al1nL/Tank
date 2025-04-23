@@ -2,6 +2,7 @@
 #define TANK_H
 #include <utility>
 #include <vector>
+#include <algorithm> //for find func
 #include "Movable.h"
 #include "Action.h"
 #include "Shell.h"
@@ -25,6 +26,7 @@ class Tank: public Movable {
     bool movedBackwardLast = false; // to know if immediate next back is allowed
     vector<Shell*> firedShells;
     Algorithm* moveDecider = nullptr;
+    bool preparingToShoot=false; //used in Alg
 
 public:
     Tank();  // Default constructor
@@ -44,6 +46,8 @@ public:
     bool isWaitingToReverse() const { return waitingForBackward; }
     bool getMovedBackwardLast() const { return movedBackwardLast; }
     int getShootCooldown() const {return shootCooldown;}
+    bool getPreparingToShoot(){return preparingToShoot;}
+    void setPreparingToShoot(bool p){preparingToShoot=p;}
     int getID() const { return id; }
     // void moveFiredShells(GameBoard& board);
 

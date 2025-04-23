@@ -12,7 +12,7 @@ using namespace std;
 class BasicMoveAlgorithm : public Algorithm {
 
 public:
-    explicit BasicMoveAlgorithm(Tank* p){ this->player = p;}
+    explicit BasicMoveAlgorithm(Tank* p):Algorithm(p){}
     Action nextMove(pair<int,int> opponentPos,const GameBoard& board);
     ~BasicMoveAlgorithm(){this->player = nullptr;};
 };

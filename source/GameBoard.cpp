@@ -100,6 +100,13 @@ GameBoard::GameBoard(string filePath){
       throw invalid_argument("Player missing. Game can not start!");
     }
 }
+void GameBoard::updateFiredShells(Shell* shell, bool add)
+{
+  if(!add)
+        allFiredShells.erase(remove(allFiredShells.begin(), allFiredShells.end(), shell), allFiredShells.end());
+  else
+    allFiredShells.push_back(shell);
+}
 
 
 pair<int, int> GameBoard::getTankPosition(int tankId) {
@@ -128,7 +135,7 @@ void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos){
         grid[oldPos.first][oldPos.second]->destroyOccupier();
     }
     else if(old.hasShell()){
-         grid[newPos.first][newPos.second]->setShell(old.getShell());
+         grid[newPos.first][newPos.second]->setShell(const_cast<Shell*>(old.getShell()));
          grid[oldPos.first][oldPos.second]->setShell(nullptr);
     }
 }

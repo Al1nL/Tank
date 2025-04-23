@@ -29,9 +29,9 @@ public:
     void updateFiredShells(Shell* s,bool add);
     void updateBoard(pair<int,int> oldPos, pair<int,int> newPos);
     vector<Cell*> getCells(pair<int,int> from, pair<int,int> offset,int amount);
-    // int positiveMod(int dividend, int divisor) const{
-    //     return ((dividend % divisor) + divisor) % divisor;
-    // }
+    int positiveMod(int dividend, int divisor) const{
+        return ((dividend % divisor) + divisor) % divisor;
+    }
     //for debug
     void printBoard();
 

@@ -10,25 +10,36 @@ Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) 
     Direction currentDir = player->getDir();
     Direction desiredDir = calculateDirection(currentRow, currentCol, targetRow, targetCol);
 
-    // 1. Dodge incoming shells
+    // Dodge incoming shells
     if (isInDanger(board)) {
-        return Action::MoveFwd;
+        if (player->isValidMove(board, Action::MoveFwd)) return Action::MoveFwd;
+        auto [backR, backC] = player->nextStep(false, board.getHeight(), board.getWidth());
+        if (player->isValidMove(board, Action::MoveBack) && canSafelyBack(backR, backC, board)) {
+            return Action::MoveBack;
+        }
+        return Action::Rotate1_8Right;
     }
-    // Rotate if not aligned
-    if (currentDir != desiredDir) {
-        return determineRotation(currentDir, desiredDir);
-    }
-
-    if ( player->getRemainingShells() > 0) {
+//    // Rotate if not aligned
+//    if (currentDir != desiredDir) {
+//        return determineRotation(currentDir, desiredDir);
+//    }
+    // Shoot if aligned and safe
+    if (player->getRemainingShells() > 0 &&isAlignedWithOpponent(opponentPos)&&!player->isWaitingToShoot()) {
+        if (!player->getPreparingToShoot()) {
+            player->setPreparingToShoot(true);
+        }
+        if (currentDir != desiredDir) {
+            return determineRotation(currentDir, desiredDir);
+        }
         return Action::Shoot;
     }
+    player->setPreparingToShoot(false);
 
-    // Move forward if aligned
-    if (currentRow != targetRow || currentCol != targetCol && (board.at(player->nextStep(true,board.getHeight(),board.getWidth()))).getOccupierType() != OccupierType::Mine){
+    // Move forward if not aligned/blocked
+    OccupierType nextOcc =board.at(player->nextStep(true,board.getHeight(),board.getWidth())).getOccupierType();
+    if ((currentRow != targetRow || currentCol != targetCol) && (nextOcc != OccupierType::Mine&&nextOcc != OccupierType::Wall)){
         return Action::MoveFwd;
     }
-
-
     // Default fallback action
     return Action::Rotate1_8Right;
 }
@@ -94,9 +105,9 @@ bool WinAlgorithm::isInDanger(const GameBoard& board) {
     for(int i =1; i<= 2; i++){
         for (const auto& pos : offsets) {
             newP = {curr.first + pos.first*i, curr.second + pos.second*i};
-			newP = {board.positiveMod(newP.first, board.getHeight()), board.positiveMod(newP.second, board.getWidth())};
+            newP = {board.positiveMod(newP.first, board.getHeight()), board.positiveMod(newP.second, board.getWidth())};
             if(board.at(newP).hasShell()){
-              return true;
+                return true;
             }
         }
     }
@@ -140,26 +151,51 @@ vector<pair<int, int>> WinAlgorithm::getSafePositions(const GameBoard& board) {
     return safePositions;
 }
 
-//Action moveToClosestSafePosition(int row, int col, const vector<pair<int, int>>& safePositions) {
-//    if (safePositions.empty()) {
-//        return Action::Rotate1_8Right; // Fallback
-//    }
-//
-//    // Assume the first position is the best for simplicity
-//    auto [safeRow, safeCol] = safePositions.front();
-//    return calculateMoveAction(row, col, safeRow, safeCol);
-//}
-//
-//vector<pair<int, int>> findSafeCells(int row, int col, const vector<vector<CellType>>& map) {
-//    vector<pair<int, int>> safeCells;
-//
-//    // Directions to check: up, down, left, right
-//    vector<pair<int, int>> directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-//    for (const auto& [dr, dc] : directions) {
-//        int newRow = row + dr, newCol = col + dc;
-//        if (isValidCell(newRow, newCol, map) && map[newRow][newCol] != CellType::Mine) {
-//            safeCells.emplace_back(newRow, newCol);
-//        }
-//    }
-//    return safeCells;
-//}
+
+bool WinAlgorithm::willBeHitIn(int row, int col, int t, const GameBoard& board) {
+    auto shells = board.getAllFiredShells();  // Get all fired shells
+    for (Shell* s : shells) {
+        auto [sr, sc] = s->getPos();
+        Direction sd = s->getDir();
+        auto [dr, dc] = offsets[static_cast<int>(sd)];
+
+        // Project forward `t` steps:
+        int pr = sr + dr * t;
+        int pc = sc + dc * t;
+
+        // Wraparound or bounds-check if needed:
+        pr = wrap(pr, board.getHeight());
+        pc = wrap(pc, board.getWidth());
+
+        if (pr == row && pc == col) {
+            return true;  // A shell will hit the cell by that time
+        }
+    }
+    return false;
+}
+
+bool WinAlgorithm::isWalkable(int r, int c, const GameBoard& board) {
+    return board.at({r, c}).isWalkable();  // Check if the cell is walkable
+}
+
+bool WinAlgorithm::isAlignedWithOpponent(pair<int, int> opponentPos) {
+    auto [r,c]=player->getPos();
+  return (r == opponentPos.first || c == opponentPos.second );  // Aligned if same row or column
+}
+
+bool WinAlgorithm::canSafelyBack(int backR, int backC, const GameBoard& board) {
+    auto [r,c]=player->getPos();
+    // current position and backward cell are safe
+    if (!player->getMovedBackwardLast()) {
+        if (willBeHitIn(r, c, 1, board) || willBeHitIn(r, c, 2, board) || willBeHitIn(backR, backC, 3, board)) {
+            return false; // Danger in current or backward position
+        }
+    }
+    else {
+        // If just moved back, only check immediate danger in next cell
+        if (willBeHitIn(backR, backC, 1, board)) {
+            return false;
+        }
+    }
+    return true; // Safe to move backward
+}

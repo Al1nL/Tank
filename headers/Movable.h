@@ -6,10 +6,17 @@
 using namespace std;
 
 enum Direction { U, UR, R, DR, D, DL, L, UL };
-static const vector<pair<int, int>> offsets = { // to match dir
-        {1, 0}, {1, 1}, {0, 1}, {-1, 1},
-        {-1, 0}, {-1, -1}, {0, -1}, {1, -1}
-    };
+static const vector<pair<int, int>> offsets = {
+  {-1, 0},  // U
+  {-1, 1},  // UR
+  { 0, 1},  // R
+  { 1, 1},  // DR
+  { 1, 0},  // D
+  { 1, -1}, // DL
+  { 0, -1}, // L
+  {-1, -1}  // UL
+};
+
 class Movable{
   protected:
     pair<int,int> pos;

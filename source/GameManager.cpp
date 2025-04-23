@@ -200,15 +200,21 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
         // Store the previous position
         auto oldPos = shell->getPos();
         previousPositions[shell] = oldPos;
-
+        if(currGameState->at(oldPos).getOccupierType() == OccupierType::Tank){
+            currGameState->at(oldPos).getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
+            break;
+        }
+        if(!isGameOver()){
         // Determine the next position for the shell
         vector<Cell*> path = currGameState->getCells(shell->getPos(), shell->getOffset(), 1);
         Cell* nextCell = path[0];
         auto p = nextCell->getPos();
+
         logShellMove(*shell, p);
 
          // Store the shell in the new cell
         cellToShells[p].push_back(shell);
+        }
     }
 }
 
@@ -222,8 +228,8 @@ void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells) {
 }
 void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells) {
 
-    // Handle 2 shells headed toward eachother ><
     for (auto& [shell, prevPos] : previousPositions) {
+        // Handle 2 shells headed toward eachother ><
         for (auto& [otherShell, otherPrevPos] : previousPositions) {
             if (otherShell != shell && otherPrevPos == shell->getPos() && prevPos == otherShell->getPos()) {
               removeShellFromGame(otherShell, allShells);
@@ -304,7 +310,8 @@ void GameManager::moveFiredShells() {
         // Update the position of all shells
         updateShellPositions(allShells, previousPositions, cellToShells);
         // Handle all possible collisions
-        handleShellCollision(allShells, previousPositions, step, cellToShells);
+        if(!isGameOver())
+            handleShellCollision(allShells, previousPositions, step, cellToShells);
     }
 }
 

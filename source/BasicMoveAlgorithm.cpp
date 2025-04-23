@@ -26,10 +26,11 @@
   Otherwise: default behavior (move forward unless there's a wall, else rotate).
 */
 Action BasicMoveAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board){
-    pair<int,int> fwdPos = nextStep(true,board.getHeight(),board.getWidth());
+    pair<int,int> fwdPos = player->nextStep(true,board.getHeight(),board.getWidth());
 
     if(board.at(fwdPos).getOccupierType() != OccupierType::Wall){
         return Action::MoveFwd;
+        cerr <<"no wall at"<<to_string(fwdPos.first)<<", "<<to_string(fwdPos.second)<<endl;
     }
     return Action::Rotate1_4Right;
 }

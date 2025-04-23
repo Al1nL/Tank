@@ -1,6 +1,8 @@
 #ifndef GAMEMANAGER_H  // Header guard to prevent multiple inclusions
 #define GAMEMANAGER_H
 #include <vector>
+#include <map>
+#include <algorithm> //for find func
 #include <utility>
 #include <iostream>
 #include <fstream>
@@ -47,7 +49,7 @@ class GameManager{
     void logTankAction(const Tank& tank, Action action, bool success);
     void logGameOver(int winner);
     void logGameStart();
-void logShellAction(Shell&, const std::string&);
+    void logShellMove(Shell& shell, pair<int,int> newPos);
     void logWallWeakened(const pair<int, int>& pos);
     void logWallDestroyed(const pair<int, int>& pos);
     void logShellsCollided(Shell& shell1, Shell& shell2);
@@ -56,9 +58,20 @@ void logShellAction(Shell&, const std::string&);
     void logTankOnTank(Tank& tank, const pair<int, int>& pos);
 	void writeOutput();
     string actionToString(Action);
-    void moveFiredShells(Tank&);
+    string directionToString(Direction);
+
+    //void moveFiredShells(Tank&);
     //for debug
     void printCurrentState();
+
+    void moveFiredShells();
+    void removeShellFromGame(Shell* shell, vector<Shell*>& allShells);
+    void handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells);
+    vector<Shell*> getAllFiredShells();
+    void updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells);
+
+
+
 
 };
 #endif

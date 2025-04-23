@@ -78,13 +78,10 @@ void Tank::rotate(Action action) {
 }
 
 void Tank::deleteShell(Shell* shellToDelete) {
-    // Iterate over the firedShells vector
-    for (auto it = firedShells.begin(); it != firedShells.end(); ++it) {
-        if (*it == shellToDelete) {  // If we find the shell in the vector
-            firedShells.erase(it);   // Remove the pointer from the vector
-            delete *it;              // Delete the shell (free memory)
-            break;                    // Exit the loop as we found and deleted the shell
-        }
+    auto it = find(firedShells.begin(), firedShells.end(), shellToDelete);
+    if (it != firedShells.end()) {
+        delete *it;
+        firedShells.erase(it);
     }
 }
 
@@ -103,16 +100,13 @@ bool Tank::isValidMove(const GameBoard& board,Action action){
         case Action::Shoot:
           return !isWaitingToShoot() && getRemainingShells() > 0;
         case Action::MoveFwd:
-            //check for a wall? what else?
         	newPos = nextStep(true,board.getHeight(), board.getWidth());
-            if(newPos.second >=  board.getWidth() || newPos.second < 0) return false;
             occupier = board.at(newPos).getOccupierType();
-			return occupier != OccupierType::Tank && occupier != OccupierType::Wall;
+			return occupier != OccupierType::Wall;
         case Action::MoveBack: //if not waiting for backward move - it's legal?
           	newPos = nextStep(false, board.getHeight(), board.getWidth());
-           	if(newPos.second >=  board.getWidth() || newPos.second < 0) return false;
             occupier = board.at(newPos).getOccupierType();
-        	return !isWaitingToReverse() && occupier != OccupierType::Tank && occupier != OccupierType::Wall;
+        	return !isWaitingToReverse() && occupier != OccupierType::Wall;
         case Action::Rotate1_8Left:
         case Action::Rotate1_4Left:
         case Action::Rotate1_8Right:

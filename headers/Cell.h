@@ -38,13 +38,13 @@ public:
     // void destroyOccupier(){occupierType == OccupierType::None;}
     bool isWalkable() const;
     int getTank();
-    pair<int,int> getPos() const {return pos;}
+    const pair<int,int> getPos() const {return pos;}
     void destroyOccupier(){occupierType= OccupierType::None, tankId = -1, wall=Wall(), mine=false;};
-    OccupierType getOccupierType() const { return occupierType; }
+    const OccupierType getOccupierType() const { return occupierType; }
     bool hasWall() const { return occupierType == OccupierType::Wall; }
-    void setTank(int tank) { tankId=tank ,occupierType = OccupierType::Tank; }
+    void setTank(int tank) { tankId=tank ;occupierType = OccupierType::Tank; }
 	bool hasTank() const { return occupierType == OccupierType::Tank; }
-    Shell* getShell() const;
+    const Shell* getShell() const;
     void setShell(Shell* shell);
     bool hasShell() const {return passingShell != nullptr;};
     void damageWall();

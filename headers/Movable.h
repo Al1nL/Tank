@@ -17,12 +17,13 @@ class Movable{
 	  int perStep;
 
   public:
+    Movable():pos({-1,-1}),dir(Direction::L),perStep(0){}
     Movable(pair<int,int> pos, Direction dir, int step) : pos(pos), dir(dir), perStep(step){};
+    int wrap(int value, int size) { return (value % size + size) % size; }; // lambda to wrap-around
 
     pair<int,int> nextStep(bool forward,const int rows, const int cols){
-        int side = forward ? -1 : 1;
+        int side = forward ? 1 : -1;
 
-        auto wrap = [](int value, int size) { return (value % size + size) % size; }; // lambda to wrap-around
 
         int newRow = wrap(pos.first + perStep * offsets[dir].first * side, rows);
         int newCol = wrap(pos.second + perStep * offsets[dir].second * side,cols);

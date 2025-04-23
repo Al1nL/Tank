@@ -33,7 +33,7 @@ bool Cell::isWalkable() const {
 }
 
 // Get shell
-Shell* Cell::getShell() const {
+const Shell* Cell::getShell() const {
     return passingShell;
 }
 

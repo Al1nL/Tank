@@ -10,13 +10,14 @@ class Tank;
 using namespace std;
 
 
-class Algorithm {
+class Algorithm: public Movable {
 
 protected:
 	Tank* player;
 
 public:
-	Algorithm() : player(nullptr) {};
+	Algorithm() : player(nullptr) {}
+    Algorithm(Tank* p) : player(p),Movable(p->getPos(),p->getDir(),1) {}
 	virtual Action nextMove(pair<int,int> opponentPos,const GameBoard& board) = 0;
 
 	virtual ~Algorithm()= default;

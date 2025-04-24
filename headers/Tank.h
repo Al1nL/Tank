@@ -37,7 +37,7 @@ public:
 //    void applyAction(Action, GameBoard&);
     void rotate(Action);
     void deleteShell(Shell*);
-    void addShell();
+    void addShell(int rows, int cols);
     bool isValidMove(const GameBoard& board,Action action);
     vector<Shell*> getFiredShells() const { return firedShells; }
     int getRemainingShells()  const {return remainingShells;}

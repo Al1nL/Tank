@@ -149,6 +149,7 @@ vector<Cell*> GameBoard::getCells(pair<int,int> from, pair<int,int> offset,int a
 }
 
 GameBoard::~GameBoard(){
+  allFiredShells.clear();
    for (int row = 0; row < height; ++row) {
         for (int col = 0; col < width; ++col) {
           delete grid[row][col];

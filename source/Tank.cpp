@@ -52,8 +52,8 @@ Tank::Tank(int id, pair<int,int> position) : id(id), Movable(position, id==1 ? D
         //id == 1 ? : new WinAlgorithm(this)
 }
 
-void Tank::addShell(){
-    firedShells.push_back(new Shell({pos.first+offsets[dir].first, pos.second+offsets[dir].second},dir,id));
+void Tank::addShell(int rows, int cols){
+    firedShells.push_back(new Shell({wrap(pos.first+offsets[dir].first,rows), wrap(pos.second+offsets[dir].second,cols)},dir,id));
 }
 
 void Tank::rotate(Action action) {
@@ -123,8 +123,9 @@ Tank::~Tank(){
   auto end = firedShells.end();
   for (auto it = firedShells.begin(); it != end; ++it) {
           // If we find the shell in the vector
-        firedShells.erase(it);   // Remove the pointer from the vector
         delete *it;              // Delete the shell (free memory)
+        firedShells.erase(it);   // Remove the pointer from the vector
+
   }
 
   delete moveDecider;

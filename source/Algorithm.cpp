@@ -55,13 +55,13 @@ bool Algorithm::canSafelyBack(int backR, int backC, const GameBoard& board)  {
     auto [r,c]=player->getPos();
     // current position and backward cell are safe
     if (!player->getMovedBackwardLast()) {
-        if (willBeHitIn(r, c, 1, board) || willBeHitIn(r, c, 2, board) || willBeHitIn(backR, backC, 3, board)) {
+        if (willBeHitIn(backR, backC, 4, board)) {//willBeHitIn(r, c, 1, board) || willBeHitIn(r, c, 2, board) ||
             return false; // Danger in current or backward position
         }
     }
     else {
         // If just moved back, only check immediate danger in next cell
-        if (willBeHitIn(backR, backC, 1, board)) {
+        if (willBeHitIn(backR, backC, 2, board)) {
             return false;
         }
     }

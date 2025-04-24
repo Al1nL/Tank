@@ -23,17 +23,17 @@ Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) 
 
     // Shoot if aligned and safe
     if (shouldShootOpponent(opponentPos)) {
-        if (!player->getPreparingToShoot()) {
-            player->setPreparingToShoot(true);
-        }
-
-        if (currentDir != desiredDir) {
-            return determineRotation(currentDir, desiredDir);
-        }
+//        if (!player->getPreparingToShoot()) {
+//            player->setPreparingToShoot(true);
+//        }
 
         return Action::Shoot;
     }
-    player->setPreparingToShoot(false);
+
+    if (currentDir != desiredDir) {
+        return determineRotation(currentDir, desiredDir);
+    }
+//    player->setPreparingToShoot(false);
 
     // Move forward if not aligned/blocked
     pair<int,int> next = player->nextStep(true, board.getHeight(), board.getWidth());

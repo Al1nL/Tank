@@ -18,7 +18,7 @@ void GameManager::processStep() {
 //    bool hitTank = false;
     // move shells first
 
-    moveFiredShells();
+
 
     //moveFiredShells(*player1);
     //moveFiredShells(*player2);
@@ -41,6 +41,7 @@ void GameManager::processStep() {
         logTankAction(*player2, action2, false);  // log bad move for tank2
     }
 
+    if(!isGameOver()) { moveFiredShells(); }
     if(!player1->getRemainingShells() && !player1->getRemainingShells()) stepsSinceNoShells++;
 }
 //
@@ -113,7 +114,7 @@ void GameManager::applyAction(Tank& tank, Action action) {
             break;
         case Action::Shoot:
             if (!tank.isWaitingToShoot()) {
-				tank.addShell();
+				tank.addShell(currGameState->getHeight(),currGameState->getWidth());
                 tank.setShootCooldown(4);
                 Shell* last = tank.getFiredShells().back();
                 currGameState->updateFiredShells(last,true);
@@ -225,7 +226,11 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
             logShellMove(*shell, p);
 
              // Store the shell in the new cell
-            cellToShells[p].push_back(shell);
+            if(cellToShells.count(p) == 0)
+          	{
+            	cellToShells.insert({p,{}});
+          	}
+             cellToShells[p].push_back(shell);
         }
     }
 }
@@ -313,7 +318,7 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 }
 void GameManager::moveFiredShells() {
 
-    vector<Shell*> allShells = currGameState->getAllFiredShells();
+    vector<Shell*> allShells = currGameState->getAllFiredShells(); //why not get fom tanks - this will requrie additional handaling
     // Create a map to store previous positions of shells
     map<Shell*, pair<int, int>> previousPositions;
 
@@ -322,8 +327,8 @@ void GameManager::moveFiredShells() {
         // Update the position of all shells
         updateShellPositions(allShells, previousPositions, cellToShells);
         // Handle all possible collisions
-        if(!isGameOver())
-            handleShellCollision(allShells, previousPositions, step, cellToShells);
+        if(isGameOver()) break;
+        handleShellCollision(allShells, previousPositions, step, cellToShells);
     }
 }
 
@@ -442,7 +447,7 @@ void GameManager::logTankOnMine(Tank& tank, const pair<int, int>& pos){
 }
 
 void GameManager::logTankOnTank(Tank& tank, const pair<int, int>& pos) {
-  string log = "Tank " + to_string(tank.getID()) + " colided with another Tank | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
+  string log = "Tank " + to_string(tank.getID()) + " collided with another Tank | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
   p1Lost =true;
   p2Lost = true;
     currGameState->at(tank.getPos()).destroyOccupier();

@@ -42,8 +42,9 @@ public:
     vector<Shell*> getFiredShells() const { return firedShells; }
     int getRemainingShells()  const {return remainingShells;}
     int isWaitingToShoot() { return shootCooldown>0; }
-    int getbBckwardCooldown()  const { return backwardCooldown; }
-    bool isWaitingToReverse() const { return waitingForBackward; }
+    int getBackwardCooldown()  const { return backwardCooldown; }
+    int getWaitingToReverse() const { return waitingForBackward; }
+    bool isWaitingToReverse() const { return waitingForBackward && backwardCooldown>0; }
     bool getMovedBackwardLast() const { return movedBackwardLast; }
     int getShootCooldown() const {return shootCooldown;}
     bool getPreparingToShoot(){return preparingToShoot;}

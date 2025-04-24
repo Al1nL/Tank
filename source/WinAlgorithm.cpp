@@ -10,8 +10,10 @@ Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) 
     Direction currentDir = player->getDir();
     Direction desiredDir = calculateDirection(currentRow, currentCol, targetRow, targetCol);
 
+    if(!player->isWaitingToReverse() && player->getWaitingToReverse())
+         return Action::MoveBack;
     // Dodge incoming shells
-    if (isInDanger(board)) {
+    if (willBeHitIn(player->getPos().first,player->getPos().second,1,board) || willBeHitIn(player->getPos().first,player->getPos().second,2,board)) {
         if (canMoveFwd(board)) {
             return Action::MoveFwd;
         }
@@ -22,18 +24,18 @@ Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) 
     }
 
     // Shoot if aligned and safe
-    if (shouldShootOpponent(opponentPos)) {
+    if (currentDir == desiredDir &&  !player->isWaitingToShoot()) {
 //        if (!player->getPreparingToShoot()) {
 //            player->setPreparingToShoot(true);
 //        }
 
         return Action::Shoot;
     }
-
     if (currentDir != desiredDir) {
         return determineRotation(currentDir, desiredDir);
     }
-//    player->setPreparingToShoot(false);
+
+    player->setPreparingToShoot(false);
 
     // Move forward if not aligned/blocked
     pair<int,int> next = player->nextStep(true, board.getHeight(), board.getWidth());

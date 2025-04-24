@@ -39,7 +39,7 @@ const Shell* Cell::getShell() const {
 
 // Set shell
 void Cell::setShell(Shell* s) {
-    if (passingShell == nullptr)
+//    if (passingShell == nullptr)
         passingShell = s;
 //    else
 //        detectCollision(s);

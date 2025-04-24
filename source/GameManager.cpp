@@ -43,6 +43,12 @@ void GameManager::processStep() {
 
     if(!isGameOver()) { moveFiredShells(); }
     if(!player1->getRemainingShells() && !player1->getRemainingShells()) stepsSinceNoShells++;
+     if(player1->getBackwardCooldown() > 0 && action1 != Action::MoveBack) {
+      player1->setBackwardCooldown(player1->getBackwardCooldown()-1);
+    }
+     if(player2->getBackwardCooldown() > 0 && action2 != Action::MoveBack) {
+      player2->setBackwardCooldown(player2->getBackwardCooldown()-1);
+    }
 }
 //
 //// TODO : Already in Tank, not used here
@@ -92,17 +98,18 @@ void GameManager::applyAction(Tank& tank, Action action) {
             tank.setMovedBackwardLast(false);
             break;
         case Action::MoveBack:
-           if (tank.getMovedBackwardLast() || (tank.getbBckwardCooldown() == 0 && tank.isWaitingToReverse())){
+           if (tank.getMovedBackwardLast() || (tank.getBackwardCooldown() == 0 && tank.isWaitingToReverse())){
                 // Instant backward move
                newPos=tank.nextStep(false,currGameState->getHeight(),currGameState->getWidth());
                 tank.setWaitingForBackward(false);
+                tank.setMovedBackwardLast(true);
             }
-           else if (tank.getbBckwardCooldown() == 0) {
+           else if (tank.getBackwardCooldown() == 0) {
                 // Start the backward move cooldown (waiting for 2 steps)
                 tank.setBackwardCooldown(2);
                 tank.setWaitingForBackward(true);
             }
-            tank.setMovedBackwardLast(false);
+
             break;
         case Action::Rotate1_8Left:
         case Action::Rotate1_8Right:
@@ -118,11 +125,15 @@ void GameManager::applyAction(Tank& tank, Action action) {
                 tank.setShootCooldown(4);
                 Shell* last = tank.getFiredShells().back();
                 currGameState->updateFiredShells(last,true);
+                currGameState->at(last->getPos()).setShell(last);
             }
             tank.setMovedBackwardLast(false);
             break;
     }
+
+
     int crash=0;
+
     if(action != Action::Shoot && tank.isWaitingToShoot())
        tank.setShootCooldown(tank.getShootCooldown() -1);
     if(newPos.first != -1){

@@ -27,7 +27,10 @@
 */
 Action BasicMoveAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board){
 
-    if (isInDanger(board)) {
+    if(!player->isWaitingToReverse() && player->getWaitingToReverse())
+        return Action::MoveBack;
+
+    if (willBeHitIn(player->getPos().first,player->getPos().second,1,board)) {
         if (canMoveFwd(board)) {
             return Action::MoveFwd;
         }

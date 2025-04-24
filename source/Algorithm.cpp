@@ -55,13 +55,13 @@ bool Algorithm::canSafelyBack(int backR, int backC, const GameBoard& board)  {
     auto [r,c]=player->getPos();
     // current position and backward cell are safe
     if (!player->getMovedBackwardLast()) {
-        if (willBeHitIn(backR, backC, 4, board)) {//willBeHitIn(r, c, 1, board) || willBeHitIn(r, c, 2, board) ||
+        if (willBeHitIn(r, c, 1, board) || willBeHitIn(r, c, 2, board) ||willBeHitIn(backR, backC, 3, board)) {//
             return false; // Danger in current or backward position
         }
     }
     else {
         // If just moved back, only check immediate danger in next cell
-        if (willBeHitIn(backR, backC, 2, board)) {
+        if (willBeHitIn(backR, backC, 1, board)) {
             return false;
         }
     }
@@ -74,18 +74,21 @@ bool Algorithm::willBeHitIn(int row, int col, int t, const GameBoard& board) {
     for (Shell* s : shells) {
         auto [sr, sc] = s->getPos();
         Direction sd = s->getDir();
-        auto [dr, dc] = offsets[static_cast<int>(sd)];
+        int step = s->getSteps();
+        for(int i =1; i<= step; i++){
+            auto [dr, dc] = offsets[static_cast<int>(sd)];
 
-        // Project forward `t` steps:
-        int pr = sr + dr * t;
-        int pc = sc + dc * t;
+            // Project forward `t` steps:
+            int pr = sr + dr * t*i;
+            int pc = sc + dc * t*i;
 
-        // Wraparound or bounds-check if needed:
-        pr = wrap(pr, board.getHeight());
-        pc = wrap(pc, board.getWidth());
+            // Wraparound or bounds-check if needed:
+            pr = wrap(pr, board.getHeight());
+            pc = wrap(pc, board.getWidth());
 
-        if (pr == row && pc == col) {
-            return true;  // A shell will hit the cell by that time
+            if (pr == row && pc == col) {
+                return true;  // A shell will hit the cell by that time
+            }
         }
     }
     return false;
@@ -98,7 +101,7 @@ bool Algorithm::isInDanger(const GameBoard& board) {
     for(int i =1; i<= 2; i++){
         for (const auto& pos : offsets) {
             newP = {curr.first + pos.first*i, curr.second + pos.second*i};
-            newP = {board.positiveMod(newP.first, board.getHeight()), board.positiveMod(newP.second, board.getWidth())};
+            newP = {wrap(newP.first, board.getHeight()), wrap(newP.second, board.getWidth())};
             if(board.at(newP).hasShell()){
                 return true;
             }

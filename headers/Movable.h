@@ -29,11 +29,11 @@ class Movable{
     int wrap(int value, int size) { return (value % size + size) % size; }; // lambda to wrap-around
 
     pair<int,int> nextStep(bool forward,const int rows, const int cols){
-        int side = forward ? 1 : -1;
+        // int side = forward ? 1 : -1;* side* side
 
 
-        int newRow = wrap(pos.first + perStep * offsets[dir].first * side, rows);
-        int newCol = wrap(pos.second + perStep * offsets[dir].second * side,cols);
+        int newRow = wrap(pos.first + perStep * offsets[dir].first , rows);
+        int newCol = wrap(pos.second + perStep * offsets[dir].second ,cols);
         return {newRow , newCol };
       }
     string getPosition() const {return "[" + to_string(pos.first) + "," + to_string(pos.second) + "]";}

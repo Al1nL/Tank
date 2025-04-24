@@ -78,11 +78,11 @@ void Tank::rotate(Action action) {
 }
 
 void Tank::deleteShell(Shell* shellToDelete) {
-    auto it = find(firedShells.begin(), firedShells.end(), shellToDelete);
-    if (it != firedShells.end()) {
-        delete *it;
-        firedShells.erase(it);
-    }
+//    auto it = find(firedShells.begin(), firedShells.end(), shellToDelete);
+//    if (it != firedShells.end()) {
+        delete shellToDelete;
+        firedShells.erase(remove(firedShells.begin(), firedShells.end(), shellToDelete), firedShells.end());
+//    }
 }
 
 Action Tank::decideNextAction(const pair<int,int> opponentPos, const GameBoard& board) {
@@ -120,11 +120,11 @@ bool Tank::isValidMove(const GameBoard& board,Action action){
 
 Tank::~Tank(){
 
-  auto end = firedShells.end();
-  for (auto it = firedShells.begin(); it != end; ++it) {
+//  auto end = ;
+  for (auto it = firedShells.begin(); it != firedShells.end();) {
           // If we find the shell in the vector
         delete *it;              // Delete the shell (free memory)
-        firedShells.erase(it);   // Remove the pointer from the vector
+        it = firedShells.erase(it);   // Remove the pointer from the vector
 
   }
 

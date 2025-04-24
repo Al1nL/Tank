@@ -102,8 +102,12 @@ GameBoard::GameBoard(string filePath){
 }
 void GameBoard::updateFiredShells(Shell* shell, bool add)
 {
-  if(!add)
-        allFiredShells.erase(remove(allFiredShells.begin(), allFiredShells.end(), shell), allFiredShells.end());
+  if(!add){
+    allFiredShells.erase(remove(allFiredShells.begin(), allFiredShells.end(), shell), allFiredShells.end());
+    auto pos = shell->getPos();
+    grid[pos.first][pos.second]->setShell(shell);
+    }
+
   else
     allFiredShells.push_back(shell);
 }

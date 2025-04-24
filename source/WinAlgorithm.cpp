@@ -20,6 +20,13 @@ Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) 
         if (canMoveBack(board)) {
             return Action::MoveBack;
         }
+
+        //todo: for on all rotation options and return the first match
+        player->rotate(Action::Rotate1_4Right);
+        if(canMoveFwd(board)){
+          player->setDir(currentDir);
+          return Action::Rotate1_4Right;
+        }
         return Action::Rotate1_8Right;
     }
 

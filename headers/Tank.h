@@ -26,7 +26,7 @@ class Tank: public Movable {
     bool movedBackwardLast = false; // to know if immediate next back is allowed
     vector<Shell*> firedShells;
     Algorithm* moveDecider = nullptr;
-    bool preparingToShoot=false; //used in Alg
+   // bool preparingToShoot=false; //used in Alg
 
 public:
     Tank();  // Default constructor
@@ -39,16 +39,16 @@ public:
     void deleteShell(Shell*);
     void addShell(int rows, int cols);
     bool isValidMove(const GameBoard& board,Action action);
-    vector<Shell*> getFiredShells() const { return firedShells; }
+    const vector<Shell*> getFiredShells() const { return firedShells; }
     int getRemainingShells()  const {return remainingShells;}
-    int isWaitingToShoot() { return shootCooldown>0; }
+    int isWaitingToShoot() const { return shootCooldown>0; }
     int getBackwardCooldown()  const { return backwardCooldown; }
     int getWaitingToReverse() const { return waitingForBackward; }
     bool isWaitingToReverse() const { return waitingForBackward && backwardCooldown>0; }
     bool getMovedBackwardLast() const { return movedBackwardLast; }
     int getShootCooldown() const {return shootCooldown;}
-    bool getPreparingToShoot(){return preparingToShoot;}
-    void setPreparingToShoot(bool p){preparingToShoot=p;}
+    // bool getPreparingToShoot(){return preparingToShoot;}
+    // void setPreparingToShoot(bool p){preparingToShoot=p;}
     int getID() const { return id; }
     // void moveFiredShells(GameBoard& board);
 

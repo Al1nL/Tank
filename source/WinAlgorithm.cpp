@@ -20,29 +20,18 @@ Action WinAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board) 
         if (canMoveBack(board)) {
             return Action::MoveBack;
         }
-
-        //todo: for on all rotation options and return the first match
-        player->rotate(Action::Rotate1_4Right);
-        if(canMoveFwd(board)){
-          player->setDir(currentDir);
-          return Action::Rotate1_4Right;
-        }
-        return Action::Rotate1_8Right;
+        for(Action rotation: rotations)
+            if(simulateRotationEscape(rotation, board))
+              return rotation;
     }
 
     // Shoot if aligned and safe
     if (currentDir == desiredDir &&  !player->isWaitingToShoot()) {
-//        if (!player->getPreparingToShoot()) {
-//            player->setPreparingToShoot(true);
-//        }
-
         return Action::Shoot;
     }
     if (currentDir != desiredDir) {
         return determineRotation(currentDir, desiredDir);
     }
-
-    player->setPreparingToShoot(false);
 
     // Move forward if not aligned/blocked
     pair<int,int> next = player->nextStep(true, board.getHeight(), board.getWidth());
@@ -57,5 +46,12 @@ WinAlgorithm::~WinAlgorithm() {
     player = nullptr;
 }
 
-
-
+bool WinAlgorithm::simulateRotationEscape(Action act,const GameBoard& board) {
+    Direction currentDir = player->getDir();
+    player->rotate(act);
+    if(canMoveFwd(board)){
+        player->setDir(currentDir);
+        return true;
+    }
+    return false;
+}

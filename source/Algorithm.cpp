@@ -83,8 +83,8 @@ bool Algorithm::willBeHitIn(int row, int col, int t, const GameBoard& board) {
             int pc = sc + dc * t*i;
 
             // Wraparound or bounds-check if needed:
-            pr = wrap(pr, board.getHeight());
-            pc = wrap(pc, board.getWidth());
+            pr = player->wrap(pr, board.getHeight());
+            pc = player->wrap(pc, board.getWidth());
 
             if (pr == row && pc == col) {
                 return true;  // A shell will hit the cell by that time
@@ -101,7 +101,7 @@ bool Algorithm::isInDanger(const GameBoard& board) {
     for(int i =1; i<= 2; i++){
         for (const auto& pos : offsets) {
             newP = {curr.first + pos.first*i, curr.second + pos.second*i};
-            newP = {wrap(newP.first, board.getHeight()), wrap(newP.second, board.getWidth())};
+            newP = {player->wrap(newP.first, board.getHeight()), player->wrap(newP.second, board.getWidth())};
             if(board.at(newP).hasShell()){
                 return true;
             }

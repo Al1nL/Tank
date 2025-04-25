@@ -12,6 +12,7 @@ public:
    	explicit WinAlgorithm(Tank* p):Algorithm(p){}
  	Action nextMove(pair<int,int> opponentPos,const GameBoard& board);
  	~WinAlgorithm();
+        bool simulateRotationEscape(Action act,const GameBoard& board);
 };
 
 #endif //WINALGORITHM_H

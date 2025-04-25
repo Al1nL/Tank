@@ -10,14 +10,15 @@ class Tank;
 using namespace std;
 
 
-class Algorithm: public Movable {
+class Algorithm {
 
 protected:
 	Tank* player;
+	vector<Action> rotations = {Action::Rotate1_8Left,Action::Rotate1_4Left, Action::Rotate1_8Right, Action::Rotate1_4Right};
 
 public:
 	Algorithm() : player(nullptr) {}
-    Algorithm(Tank* p) : player(p),Movable(p->getPos(),p->getDir(),1) {}
+    Algorithm(Tank* p) : player(p) {}
 	virtual Action nextMove(pair<int,int> opponentPos,const GameBoard& board) = 0;
 
 	virtual ~Algorithm()= default;

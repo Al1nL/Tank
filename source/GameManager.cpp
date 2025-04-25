@@ -4,25 +4,14 @@
 
 GameManager::GameManager(std::string filepath){
   currGameState = new GameBoard(filepath);
-  player1 = new Tank(1, currGameState->getTankPosition(1)); //todo: check if pos -1-1 and make p1Lost true
+  player1 = new Tank(1, currGameState->getTankPosition(1));
   player2 = new Tank(2, currGameState->getTankPosition(2));
   logGameStart();
 }
 
-// TODO: runGameLoop, detectCollision, countDown for game(when both players are out of shells)-40 more steps till end of game
-// TODO: all funcs on Tank and Shell, needs to update the shells for currentgamestate to be updated always
-// TODO: isGameOver func, requestAction
 void GameManager::processStep() {
   	pair<int, int> pos;
-
-//    bool hitTank = false;
-    // move shells first
-
-
-
-    //moveFiredShells(*player1);
-    //moveFiredShells(*player2);
-
+        if(!isGameOver()) { moveFiredShells(); }
     Action action1 = player1->decideNextAction(player2->getPos(), *currGameState);
     Action action2 = player2->decideNextAction(player1->getPos(), *currGameState);
 
@@ -37,51 +26,21 @@ void GameManager::processStep() {
     if(p1Lost || p2Lost) { return;}
     if (player2->isValidMove(*currGameState, action2)) {
         applyAction(*player2,action2);
-    } else {
+    }
+    else {
         logTankAction(*player2, action2, false);  // log bad move for tank2
     }
 
-    if(!isGameOver()) { moveFiredShells(); }
-    if(!player1->getRemainingShells() && !player1->getRemainingShells()) stepsSinceNoShells++;
-     if(player1->getBackwardCooldown() > 0 && action1 != Action::MoveBack) {
+    if(!player1->getRemainingShells() && !player1->getRemainingShells()) {
+      stepsSinceNoShells++;
+    }
+    if(player1->getBackwardCooldown() > 0 && action1 != Action::MoveBack) {
       player1->setBackwardCooldown(player1->getBackwardCooldown()-1);
     }
-     if(player2->getBackwardCooldown() > 0 && action2 != Action::MoveBack) {
+    if(player2->getBackwardCooldown() > 0 && action2 != Action::MoveBack) {
       player2->setBackwardCooldown(player2->getBackwardCooldown()-1);
     }
 }
-//
-//// TODO : Already in Tank, not used here
-//bool GameManager::validateAction(Tank tank, Action action) {
-//    // Only allow actions if the tank is not waiting for a backward move
-//    if (tank.isWaitingToReverse() && action != Action::MoveFwd)
-//        return false;
-//
-//    pair<int,int> newPos;
-//    OccupierType occupier;
-//
-//    switch (action) {
-//        case Action::Shoot:
-//          return !tank.isWaitingToShoot() && tank.getRemainingShells() > 0;
-//        case Action::MoveFwd:
-//        	newPos = tank.nextStep(true,currGameState->getHeight(),currGameState->getWidth());
-//            occupier = currGameState->at(newPos).getOccupierType();
-//			return occupier != OccupierType::Wall;
-//        case Action::MoveBack:
-//          	newPos = tank.nextStep(false, currGameState->getHeight(),currGameState->getWidth());
-//            occupier = currGameState->at(newPos).getOccupierType();
-//        	return !tank.isWaitingToReverse() && occupier != OccupierType::Wall;
-//        case Action::Rotate1_8Left:
-//        case Action::Rotate1_4Left:
-//        case Action::Rotate1_8Right:
-//        case Action::Rotate1_4Right:
-//            return !tank.isWaitingToReverse();  // Rotation is always valid
-//        default:
-//            return false;
-//    }
-//}
-
-//bool GameManager::validateShoot(Tank tank) { return !tank.isWaitingToShoot() && tank.getRemainingShells() > 0;}
 
 void GameManager::applyAction(Tank& tank, Action action) {
   	pair<int,int> newPos = {-1,-1};
@@ -115,7 +74,6 @@ void GameManager::applyAction(Tank& tank, Action action) {
         case Action::Rotate1_8Right:
         case Action::Rotate1_4Left:
         case Action::Rotate1_4Right:
-//            movedBackwardLast = false;
             tank.rotate(action);
             tank.setMovedBackwardLast(false);
             break;
@@ -130,7 +88,6 @@ void GameManager::applyAction(Tank& tank, Action action) {
             tank.setMovedBackwardLast(false);
             break;
     }
-
 
     int crash=0;
 
@@ -161,51 +118,6 @@ void GameManager::countDown(){
           stepsSinceNoShells++;
 	}
 }
-
-//
-//void GameManager::goThroughCells(vector<Cell*> cells, Shell* shell) {
-//  OccupierType occupier;
-//  for (Cell* c : cells) {
-//    occupier = c->getOccupierType();
-//    if(c->hasShell()){
-//      	Shell* s = c->getShell();
-//      	s->getOwnerID() == 1 ? player1->deleteShell(c->getShell()) : player2->deleteShell(c->getShell());
-//		shell->getOwnerID() ==1 ? player1->deleteShell(c->getShell()) : player2->deleteShell(c->getShell());
-//        logShellsCollided(*shell, *c->getShell());
-//        return;
-//    }
-//    else{
-//      c->setShell(shell);
-//      }
-//    switch (occupier) {
-//      case OccupierType::Tank:
-//        c->getTank() == 1 ? logShellHitTank(*shell,*player1) : logShellHitTank(*shell,*player2);
-//		return;
-//      case OccupierType::Wall:
-//        c->damageWall();
-//        if(c->getOccupierType() == OccupierType::None){
-//          logWallDestroyed(c->getPos());
-//          return;
-//        }
-//        logWallWeakened(c->getPos());
-//        break;
-//
-//    }
-//  }
-//}
-
-
-//vector<Shell*> GameManager::getAllFiredShells() {
-//    vector<Shell*> allShells;
-//    const auto &f1 = player1->getFiredShells();
-//    const auto &f2 = player2->getFiredShells();
-//    if (!f1.empty())
-//        allShells.insert(allShells.end(), f1.begin(), f1.end());
-//    if (!f2.empty())
-//        allShells.insert(allShells.end(), f2.begin(), f2.end());
-//
-//    return allShells;
-//}
 
 void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells) {
     for (Shell* shell : allShells) {
@@ -254,6 +166,7 @@ void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells) {
         shell->getOwnerID() == 1 ? player1->deleteShell(shell) : player2->deleteShell(shell);
     }
 }
+
 void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells) {
 
     for (auto& [shell, prevPos] : previousPositions) {
@@ -322,13 +235,11 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
                 currGameState->updateBoard(oldPos, pos);
                 shell->setPos(pos);
             }
-
-
         }
     }
 }
-void GameManager::moveFiredShells() {
 
+void GameManager::moveFiredShells() {
     vector<Shell*> allShells = currGameState->getAllFiredShells(); //why not get fom tanks - this will requrie additional handaling
     // Create a map to store previous positions of shells
     map<Shell*, pair<int, int>> previousPositions;
@@ -342,22 +253,6 @@ void GameManager::moveFiredShells() {
         handleShellCollision(allShells, previousPositions, step, cellToShells);
     }
 }
-
-//void GameManager::moveFiredShells(Tank& tank) {
-//    vector<Cell*> cell;
-//    for(int step=0;step<2;step++){
-//        for (auto& shell : tank.getFiredShells() ) {
-//           //      pos=shell->nextStep(true,currGameState->getHeight());
-//            cell = currGameState->getCells(shell->getPos(), shell->getOffset(),1);// shell->getSteps());
-//            goThroughCells(cell,shell);
-//            if(isGameOver()) {
-//                return;
-//            }
-//            currGameState->updateBoard( shell->getPos(), cell[shell->getSteps()-1]->getPos());
-//            shell->setPos(cell[shell->getSteps()-1]->getPos());
-//        }
-//    }
-//}
 
 bool GameManager::isGameOver(){
 	if( p1Lost || p2Lost || stepsSinceNoShells == 40) return true;
@@ -480,6 +375,7 @@ void GameManager::logShellHitTank(Shell& shell, Tank& tank) {
     currGameState->at(tank.getPos()).destroyOccupier();
     cerr << log << endl;
 }
+
 void GameManager::writeOutput() {
     logFile.open("GameLog.txt", std::ios::out | std::ios::trunc);  // Open file in write mode and truncate it
     // Write the logs to the file

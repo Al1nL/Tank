@@ -16,15 +16,6 @@
 //    return Action::Rotate1_4Right;
 //}
 
-/**
-* If in danger and backward is possible: start backward move with 2-step delay.
-
-  If already waiting for backward: wait until cooldown hits 0, then move back.
-
-  If a forward move becomes available while waiting for back: cancel the delayed back.
-
-  Otherwise: default behavior (move forward unless there's a wall, else rotate).
-*/
 Action BasicMoveAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board){
 
     if(!player->isWaitingToReverse() && player->getWaitingToReverse())
@@ -41,12 +32,8 @@ Action BasicMoveAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& b
     }
 
     if (shouldShootOpponent(opponentPos)) {
-        if (!player->getPreparingToShoot()) {
-            player->setPreparingToShoot(true);
-        }
         return Action::Shoot;
     }
-    player->setPreparingToShoot(false);
 
     if (canMoveFwd(board)) {
         return Action::MoveFwd;

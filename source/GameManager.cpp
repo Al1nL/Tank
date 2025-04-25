@@ -174,19 +174,26 @@ void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells, m
 void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells) {
 
 
-    for (auto& [shell, prevPos] : previousPositions) {
-        // Handle 2 shells headed toward eachother ><
-        for (auto& [otherShell, otherPrevPos] : previousPositions) {
-            if (otherShell != shell && otherPrevPos == shell->getPos() && prevPos == otherShell->getPos()) {
-              logShellsCollided({shell, otherShell});
+    // Identify all collisions
+	set<pair<Shell*, Shell*>> collisions;
+	for (auto& [shell, prevPos] : previousPositions) {
+    	for (auto& [otherShell, otherPrevPos] : previousPositions) {
+        	if (otherShell != shell &&
+           	 	otherPrevPos == shell->getPos() &&
+            	prevPos == otherShell->getPos() && collisions.find({shell, otherShell}) != collisions.end() && collisions.find({otherShell, shell}) != collisions.end()){
+            		collisions.insert({shell, otherShell});
+        	}
+    	}
+	}
 
 
-      			removeShellFromGame(shell, allShells,cellToShells);
-     			removeShellFromGame(otherShell, allShells,cellToShells);
-//              shellsToRemove.push_back(otherShell);
-            }
-        }
-    }
+	for (auto& [shell1, shell2] : collisions) {
+    	logShellsCollided({shell1, shell2});
+
+    	// Remove from game systems
+    	removeShellFromGame(shell1, allShells, cellToShells);
+    	removeShellFromGame(shell2, allShells, cellToShells);
+   }
 
     // Handle shells at the same cell
     for (auto& [pos, shells] : cellToShells) {

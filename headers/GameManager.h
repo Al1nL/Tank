@@ -2,6 +2,7 @@
 #define GAMEMANAGER_H
 #include <vector>
 #include <map>
+#include <set>
 #include <algorithm> //for find func
 #include <utility>
 #include <iostream>

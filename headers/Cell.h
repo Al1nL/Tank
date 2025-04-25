@@ -15,7 +15,6 @@ struct Wall {
     int getHealth() const { return wallHealth; }
     void damageWall() { wallHealth--; }
 };
-
 enum class OccupierType {
     None,
     Wall,

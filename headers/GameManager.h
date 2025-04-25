@@ -10,12 +10,14 @@
 #include "GameBoard.h"
 #include "Tank.h"
 #include <string>
+#include "OppData.h"
 
 // Forward declarations
 class Tank;
 class GameBoard;
 class Shell;
 class Cell;
+struct OppData;
 using namespace std;
 
 class GameManager{

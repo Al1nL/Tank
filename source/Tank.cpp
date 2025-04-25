@@ -41,8 +41,8 @@ void Tank::deleteShell(Shell* shellToDelete) {
 //    }
 }
 
-Action Tank::decideNextAction(const pair<int,int> opponentPos, const GameBoard& board) {
-	return moveDecider->nextMove(opponentPos,board);
+Action Tank::decideNextAction(const OppData& opp, const GameBoard& board) {
+	return moveDecider->nextMove(opp,board);
 }
 
 bool Tank::isValidMove(const GameBoard& board,Action action){

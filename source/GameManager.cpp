@@ -11,16 +11,18 @@ GameManager::GameManager(std::string filepath){
 
 void GameManager::processStep() {
   	pair<int, int> pos;
-        if(!isGameOver()) { moveFiredShells(); }
-    Action action1 = player1->decideNextAction(player2->getPos(), *currGameState);
-    Action action2 = player2->decideNextAction(player1->getPos(), *currGameState);
+	moveFiredShells();
+
+    if(p1Lost || p2Lost) { return;}
+
+    Action action1 = player1->decideNextAction({player2->getPos(),player2->getDir()}, *currGameState);
+    Action action2 = player2->decideNextAction({player1->getPos(),player1->getDir()}, *currGameState);
 
     // validate and execute
-    if(p1Lost || p2Lost) { return;}
     if (player1->isValidMove(*currGameState, action1)) {
         applyAction(*player1,action1);
     } else {
-        logTankAction(*player1, action1, false);  // log bad move for tank1
+        logTankAction(*player1, action1, false);  // log bad move
     }
 
     if(p1Lost || p2Lost) { return;}
@@ -28,7 +30,7 @@ void GameManager::processStep() {
         applyAction(*player2,action2);
     }
     else {
-        logTankAction(*player2, action2, false);  // log bad move for tank2
+        logTankAction(*player2, action2, false);
     }
 
     if(!player1->getRemainingShells() && !player1->getRemainingShells()) {
@@ -315,11 +317,11 @@ void GameManager::logGameOver(int winner) {
 void GameManager::logTankAction(const Tank& tank, Action action, bool success) {
     string result = success ? "Good move" : "Bad move",log;
     if(action == Action::MoveFwd||action == Action::MoveBack) {
-      log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " in direction "+ directionToString(tank.getDir()) + " | Updated Position: " + tank.getPosition();
+      log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " facing direction "+ directionToString(tank.getDir()) + " | Updated Position: " + tank.getPosition();
     }
     else
       {
-        log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " in direction "+ directionToString(tank.getDir()) + " | Position: " + tank.getPosition();
+        log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " facing direction "+ directionToString(tank.getDir()) + " | Position: " + tank.getPosition();
       }
     logs.push_back(log);
     cerr << log << endl;

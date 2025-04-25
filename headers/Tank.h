@@ -11,8 +11,8 @@
 // Forward declarations
 class GameBoard;
 class Algorithm;
-// class WinAlgorithm;
 class Shell;
+struct OppData;
 
 using namespace std;
 
@@ -32,9 +32,7 @@ public:
     Tank();  // Default constructor
     Tank(int id, pair<int,int> position);
 
-    Action decideNextAction(const pair<int,int> opponentPos,const GameBoard& board);
-
-//    void applyAction(Action, GameBoard&);
+    Action decideNextAction(const OppData& opp,const GameBoard& board);
     void rotate(Action);
     void deleteShell(Shell*);
     void addShell(int rows, int cols);
@@ -47,11 +45,8 @@ public:
     bool isWaitingToReverse() const { return waitingForBackward && backwardCooldown>0; }
     bool getMovedBackwardLast() const { return movedBackwardLast; }
     int getShootCooldown() const {return shootCooldown;}
-    // bool getPreparingToShoot(){return preparingToShoot;}
-    // void setPreparingToShoot(bool p){preparingToShoot=p;}
-    int getID() const { return id; }
-    // void moveFiredShells(GameBoard& board);
 
+    int getID() const { return id; }
     //setter
     void setWaitingForBackward(bool wait) { waitingForBackward = wait; }
     void setBackwardCooldown(int b) { backwardCooldown = b; }

@@ -40,7 +40,6 @@ bool Algorithm::shouldShootOpponent(const pair<int,int>& opponentPos)  {
 }
 
 bool Algorithm::canMoveFwd(const GameBoard& board)  {
-    if (!player->isValidMove(board, Action::MoveFwd)) return false;
     auto [r, c] = player->nextStep(true, board.getHeight(), board.getWidth());
     return isOccupierFree({r, c}, board);
 }
@@ -68,6 +67,15 @@ bool Algorithm::canSafelyBack(int backR, int backC, const GameBoard& board)  {
     return true; // Safe to move backward
 }
 
+Action Algorithm::checkForEscape(const GameBoard& board) {
+	if (canMoveFwd(board)) {
+		return Action::MoveFwd;
+	}
+	if (canMoveBack(board)) {
+		return Action::MoveBack;
+	}
+    return Action::None;
+}
 
 bool Algorithm::willBeHitIn(int row, int col, int t, const GameBoard& board) {
     auto shells = board.getAllFiredShells();  // Get all fired shells

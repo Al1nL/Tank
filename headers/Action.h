@@ -9,7 +9,8 @@ enum class Action {
     Rotate1_4Left,
     Rotate1_8Right,
     Rotate1_4Right,
-    Shoot
+    Shoot,
+    None
 };
 
 #endif

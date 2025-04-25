@@ -5,7 +5,7 @@
 #include <string>
 using namespace std;
 
-enum Direction { U, UR, R, DR, D, DL, L, UL };
+enum Direction { U, UR, R, DR, D, DL, L, UL, None};
 static const vector<pair<int, int>> offsets = {
   {-1, 0},  // U
   {-1, 1},  // UR

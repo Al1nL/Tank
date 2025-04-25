@@ -16,22 +16,19 @@
 //    return Action::Rotate1_4Right;
 //}
 
-Action BasicMoveAlgorithm::nextMove(pair<int,int> opponentPos,const GameBoard& board){
+Action BasicMoveAlgorithm::nextMove(OppData opp,const GameBoard& board){
 
     if(!player->isWaitingToReverse() && player->getWaitingToReverse())
         return Action::MoveBack;
 
     if (willBeHitIn(player->getPos().first,player->getPos().second,1,board)) {
-        if (canMoveFwd(board)) {
-            return Action::MoveFwd;
-        }
-        if (canMoveBack(board)) {
-            return Action::MoveBack;
-        }
+        Action res=checkForEscape(board);
+        if(res!=Action::None)
+          return res;
         return Action::Rotate1_8Right;
     }
 
-    if (shouldShootOpponent(opponentPos)) {
+    if (shouldShootOpponent(opp.opponentPos)) {
         return Action::Shoot;
     }
 

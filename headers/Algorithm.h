@@ -5,21 +5,20 @@
 #include <queue>
 #include "Action.h"
 #include "Tank.h"
+#include "OppData.h"
 
 class Tank;
 using namespace std;
-
 
 class Algorithm {
 
 protected:
 	Tank* player;
-	vector<Action> rotations = {Action::Rotate1_8Left,Action::Rotate1_4Left, Action::Rotate1_8Right, Action::Rotate1_4Right};
 
 public:
 	Algorithm() : player(nullptr) {}
     Algorithm(Tank* p) : player(p) {}
-	virtual Action nextMove(pair<int,int> opponentPos,const GameBoard& board) = 0;
+	virtual Action nextMove(OppData opp,const GameBoard& board) = 0;
 
 	virtual ~Algorithm()= default;
 	Direction calculateDirection(int currRow, int currCol, int targetRow, int targetCol);
@@ -36,6 +35,8 @@ protected:
 	bool willBeHitIn(int row, int col, int t, const GameBoard& board);
     bool isInDanger(const GameBoard& board);
     bool isAlignedWithOpponent(pair<int, int> opponentPos) ;
+	Action checkForEscape(const GameBoard& board);
+
 };
 
 

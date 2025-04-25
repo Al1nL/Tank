@@ -54,7 +54,7 @@ class GameManager{
     void logShellMove(Shell& shell, pair<int,int> newPos);
     void logWallWeakened(const pair<int, int>& pos);
     void logWallDestroyed(const pair<int, int>& pos);
-    void logShellsCollided(Shell& shell1, Shell& shell2);
+    void logShellsCollided(vector<Shell*> shells);
     void logShellHitTank(Shell& shell, Tank& tank);
     void logTankOnMine(Tank& tank, const pair<int, int>& pos);
     void logTankOnTank(Tank& tank, const pair<int, int>& pos);
@@ -67,7 +67,7 @@ class GameManager{
     void printCurrentState();
 
     void moveFiredShells();
-    void removeShellFromGame(Shell* shell, vector<Shell*>& allShells);
+    void removeShellFromGame(Shell* shell, vector<Shell*>& allShells,map<pair<int, int>, vector<Shell*>> &cellToShells);
     void handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells);
     vector<Shell*> getAllFiredShells();
     void updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells);

@@ -160,9 +160,11 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
     }
 }
 
-void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells) {
+void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells, map<pair<int, int>, vector<Shell*>> &cellToShells) {
     if (shell) {
       // Deletes the shell from the vector
+      	pair<int, int> pos = {shell->getPos().first + offsets[shell->getDir()].first,shell->getPos().second + offsets[shell->getDir()].second};
+        cellToShells[pos].erase(remove(cellToShells[pos].begin(), cellToShells[pos].end(), shell), cellToShells[pos].end());
         allShells.erase(remove(allShells.begin(), allShells.end(), shell), allShells.end());
         currGameState->updateFiredShells(shell,false);
         shell->getOwnerID() == 1 ? player1->deleteShell(shell) : player2->deleteShell(shell);
@@ -171,21 +173,24 @@ void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells) {
 
 void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells) {
 
+
     for (auto& [shell, prevPos] : previousPositions) {
         // Handle 2 shells headed toward eachother ><
         for (auto& [otherShell, otherPrevPos] : previousPositions) {
             if (otherShell != shell && otherPrevPos == shell->getPos() && prevPos == otherShell->getPos()) {
-              logShellsCollided(*shell, *otherShell);
-              removeShellFromGame(otherShell, allShells);
-              removeShellFromGame(shell, allShells);
-                // Log the collision between the two shells
-                std::cerr << "[DEBUG] head-on collision between shells at "
-                            << shell->getPos().first<<","<<shell->getPos().second<<"\n";
+              logShellsCollided({shell, otherShell});
+
+
+      			removeShellFromGame(shell, allShells,cellToShells);
+     			removeShellFromGame(otherShell, allShells,cellToShells);
+//              shellsToRemove.push_back(otherShell);
             }
         }
     }
+
     // Handle shells at the same cell
     for (auto& [pos, shells] : cellToShells) {
+      	if(shells.empty()) continue;
         Cell& cell = currGameState->at(pos);
         vector<Shell*> validShells;
         if (shells.size() > 1) {
@@ -204,9 +209,10 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
             std::cerr<<"[DEBUG] multi-shell collision in cell\n";
 
             // All valid shells in the same cell will be destroyed
-            logShellsCollided(*validShells[0], *validShells[1]);  // Log collision between shells
+            logShellsCollided(validShells);  // Log collision between shells
             for (Shell* s : validShells) {
-                removeShellFromGame(s, allShells);
+
+                removeShellFromGame(s, allShells, cellToShells);
             continue;
             }
         }
@@ -219,7 +225,7 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
             switch (occ) {
                 case OccupierType::Tank:
                     cell.getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
-                    removeShellFromGame(shell, allShells);
+                    removeShellFromGame(shell, allShells,cellToShells);
                     break;
                 case OccupierType::Wall:
                     // If the cell contains a wall, damage it
@@ -244,9 +250,10 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 void GameManager::moveFiredShells() {
     vector<Shell*> allShells = currGameState->getAllFiredShells(); //why not get fom tanks - this will requrie additional handaling
     // Create a map to store previous positions of shells
-    map<Shell*, pair<int, int>> previousPositions;
+
 
     for (int step = 0; step < 2; step++) {
+      	map<Shell*, pair<int, int>> previousPositions;
         map<pair<int, int>, vector<Shell*>> cellToShells;
         // Update the position of all shells
         updateShellPositions(allShells, previousPositions, cellToShells);
@@ -364,8 +371,16 @@ void GameManager::logTankOnTank(Tank& tank, const pair<int, int>& pos) {
     cerr << log << endl;
 }
 
-void GameManager::logShellsCollided(Shell& shell1, Shell& shell2) {  //todo: change?? case where more than 2 collided what to do?
-  string log = "Shell Collision: Tank " + to_string(shell1.getOwnerID()) + " vs Tank " + to_string(shell2.getOwnerID()) + " | Position: " + shell1.getPosition();
+void GameManager::logShellsCollided(vector<Shell*> shells) {  //todo: change?? case where more than 2 collided what to do?
+  string log = "Shell Collision: Number of shells: "+to_string(shells.size())+"| belong to tank: ";
+  vector<int> ids;
+  for(auto shell : shells) {
+    if(find(ids.begin(), ids.end(),shell->getOwnerID()) == ids.end()){
+		log+= to_string(shell->getOwnerID()) +" ";
+    	ids.push_back(shell->getOwnerID());
+      }
+  }
+  log += "| Position: " + shells[0]->getPosition();
     logs.push_back(log);
     cerr << log << endl;
 }

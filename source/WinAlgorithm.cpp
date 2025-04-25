@@ -20,13 +20,14 @@ Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
         return Action::Shoot;
         }
     if(willBeHitIn(player->getPos().first,player->getPos().second,2,board)) {
-		Action res=checkForEscape(board);
-        if(res!=Action::None)
-          return res;
+		Action res;
         res =calculateBestEscapeRotation(board);
         if(res!=Action::None)
           return res;
         else{
+          	res=checkForEscape(board);
+        	if(res!=Action::None)
+          		return res;
         	for(Action rotation: rotations)
 	        	if(willHaveTimeToShootAfterRotation(rotation,board))
     	        	return rotation;
@@ -39,7 +40,8 @@ Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
     }
     if (currentDir != desiredDir) {
          Action rotate= determineRotation(currentDir, desiredDir);
-         if(simulateRotation(rotate, board))
+         RotationOption option = rotationOption(rotate, desiredDir, currentDir ,board);
+         if(option.canMove && option.safetyScore > 0)
          	return rotate;
     }
 
@@ -134,48 +136,19 @@ Action WinAlgorithm::calculateBestEscapeRotation(const GameBoard& board) {
     Direction currentDir = player->getDir();
     auto [row, col] = player->getPos();
 
-    struct RotationOption {
-        Action action;
-        int safetyScore;
-        bool canMove;
-        Direction newDir;
-    };
-
     vector<RotationOption> options;
-
+	RotationOption option;
     // Evaluate each rotation option
     for (Action rotation : rotations) {
         // Simulate rotation
         player->rotate(rotation);
         Direction newDir = player->getDir();
 
-        RotationOption option;
-        option.action = rotation;
-        option.newDir = newDir;
-        option.canMove = canMoveFwd(board);
 
-        // Calculate safety score (higher is better)
-        option.safetyScore = 0;
-
-        // Check immediate safety
-        auto [nextRow, nextCol] = player->nextStep(true, board.getHeight(), board.getWidth());
-        if (!willBeHitIn(nextRow, nextCol, 1, board)) option.safetyScore += 3;
-        if (!willBeHitIn(nextRow, nextCol, 2, board)) option.safetyScore += 2;
-        if (!willBeHitIn(nextRow, nextCol, 3, board)) option.safetyScore += 1;
-
-        // Bonus for moving towards open space
-        if (option.canMove) {
-            option.safetyScore += 2;
-
-            // Check if this direction leads to more open space
-            int openSpace = countOpenSpaceInDirection(newDir, board, 3);
-            option.safetyScore += openSpace;
-        }
-
+		option = rotationOption(rotation, newDir, currentDir, board);
         options.push_back(option);
 
-        // Reset direction
-        player->setDir(currentDir);
+
     }
 
     // Sort options by safety score (descending)
@@ -187,33 +160,74 @@ Action WinAlgorithm::calculateBestEscapeRotation(const GameBoard& board) {
     });
 
     // Return the best safe rotation
-    for (const auto& option : options) {
-        if (option.safetyScore > 0) {
-            return option.action;
-        }
-    }
+//    for (const auto& option : options) {
+//        if (option.safetyScore > 0) {
+//            return option.action;
+//        }
+//    }
 
     // If all options are bad, choose the least dangerous
     return options.empty() ? Action::None : options[0].action;
 }
 
-int WinAlgorithm::countOpenSpaceInDirection(Direction dir, const GameBoard& board, int steps) {
-    auto [row, col] = player->getPos();
-    auto [dr, dc] = offsets[static_cast<int>(dir)];
+RotationOption WinAlgorithm::rotationOption(Action rotation, Direction newDir,Direction oldDir,const GameBoard& board) {
+  		RotationOption option;
+        option.action = rotation;
+        option.newDir = newDir;
+        player->setDir(newDir);
+        option.canMove = canMoveFwd(board);
 
-    int openCount = 0;
+        // Calculate safety score (higher is better)
+        option.safetyScore = 0;
 
-    for (int i = 1; i <= steps; i++) {
-        int newRow = player->wrap(row + dr * i, board.getHeight());
-        int newCol = player->wrap(col + dc * i, board.getWidth());
+        // Check immediate safety
+        auto [nextRow, nextCol] = player->nextStep(true, board.getHeight(), board.getWidth());
+        if (!willBeHitIn(nextRow, nextCol, 1, board)) option.safetyScore += 2;
+        if (!willBeHitIn(nextRow, nextCol, 2, board)) option.safetyScore += 1;
 
-        if (isOccupierFree({newRow, newCol}, board) &&
-            !willBeHitIn(newRow, newCol, i, board)) {
-            openCount++;
-        } else {
-            break; // Stop counting when we hit an obstacle
+        // Bonus for moving towards open space
+        if (option.canMove) {
+            option.safetyScore += 2;
+
+            // Check if this direction leads to more open space
+            int openSpace = countOpenSpaceInDirection(board, {nextRow, nextCol});
+            option.safetyScore += openSpace;
         }
-    }
-
-    return openCount;
+         // Reset direction
+        player->setDir(oldDir);
+        return option;
 }
+
+//int WinAlgorithm::countOpenSpaceInDirection(Direction dir, const GameBoard& board, int steps) {
+//    auto [row, col] = player->getPos();
+//    auto [dr, dc] = offsets[static_cast<int>(dir)];
+//
+//    int openCount = 0;
+//
+//    for (int i = 1; i <= steps; i++) {
+//        int newRow = player->wrap(row + dr * i, board.getHeight());
+//        int newCol = player->wrap(col + dc * i, board.getWidth());
+//
+//        if (isOccupierFree({newRow, newCol}, board)){ //&&!willBeHitIn(newRow, newCol, i, board)) {
+//            openCount++;
+//        } else {
+//            break; // Stop counting when we hit an obstacle
+//        }
+//    }
+//
+//    return openCount;
+//}
+
+int WinAlgorithm::countOpenSpaceInDirection(const GameBoard& board, pair<int,int> pos) {
+  	auto [row, col] = pos;
+    int openCount = 0;
+  	for(auto [dr, dc] : offsets){
+          int newRow = player->wrap(row + dr, board.getHeight());
+        int newCol = player->wrap(col + dc, board.getWidth());
+
+        if (isOccupierFree({newRow, newCol}, board)){ //&&!willBeHitIn(newRow, newCol, i, board)) {
+            openCount++;
+         }
+  	}
+        return openCount;
+  }

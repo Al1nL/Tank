@@ -41,7 +41,7 @@ bool Algorithm::shouldShootOpponent(const pair<int,int>& opponentPos)  {
 
 bool Algorithm::canMoveFwd(const GameBoard& board)  {
     auto [r, c] = player->nextStep(true, board.getHeight(), board.getWidth());
-    return isOccupierFree({r, c}, board);
+    return isOccupierFree({r, c}, board) && !willBeHitIn(r,c,1,board);
 }
 
 bool Algorithm::canMoveBack(const GameBoard& board)  {
@@ -83,12 +83,13 @@ bool Algorithm::willBeHitIn(int row, int col, int t, const GameBoard& board) {
         auto [sr, sc] = s->getPos();
         Direction sd = s->getDir();
         int step = s->getSteps();
-        for(int i =1; i<= step; i++){
+        for(int i =0; i<= step; i++){
             auto [dr, dc] = offsets[static_cast<int>(sd)];
 
             // Project forward `t` steps:
-            int pr = sr + dr * t*i;
-            int pc = sc + dc * t*i;
+            int stepsAhead = (t-1)*2 + i;
+            int pr = sr + dr * stepsAhead;
+            int pc = sc + dc * stepsAhead;
 
             // Wraparound or bounds-check if needed:
             pr = player->wrap(pr, board.getHeight());

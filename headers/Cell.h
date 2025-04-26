@@ -26,31 +26,34 @@ class Cell{
     OccupierType occupierType; // Enum to track the current type
 	pair<int,int> pos;
     union {
-        Wall wall;
-        bool mine;
-        int tankId =-1;
+        Wall wall;    // Only valid when occupierType == Wall
+        bool mine;    // Only valid when occupierType == Mine
+        int tankId;   // Only valid when occupierType == Tank
     };
-    Shell* passingShell = nullptr;
+    Shell* passingShell = nullptr; // Shell currently passing through this cell
 public:
-    // Cell(GameManager& gm);
     Cell(OccupierType o,pair<int,int> pos, int tankId = -1);
-    // void destroyOccupier(){occupierType == OccupierType::None;}
-    bool isWalkable() const;
+    ~Cell()=default;
+
+    // State check
+    bool isWalkable() const{return occupierType == OccupierType::None;}
+    bool hasWall() const { return occupierType == OccupierType::Wall; }
+    bool hasTank() const { return occupierType == OccupierType::Tank; }
+    bool hasShell() const {return passingShell != nullptr;};
+
+    // Getters
     int getTank();
     const pair<int,int> getPos() const {return pos;}
-    void destroyOccupier(){occupierType= OccupierType::None, tankId = -1, wall=Wall(), mine=false;};
     const OccupierType getOccupierType() const { return occupierType; }
-    bool hasWall() const { return occupierType == OccupierType::Wall; }
-    void setTank(int tank) { tankId=tank ;occupierType = OccupierType::Tank; }
-	bool hasTank() const { return occupierType == OccupierType::Tank; }
-    const Shell* getShell() const;
-    void setShell(Shell* shell);
-    bool hasShell() const {return passingShell != nullptr;};
-    void damageWall();
-    bool WallIsGone() const; //returns true if wall is gone in the last step
-//private:
-    void detectCollision(Shell* other);
+    const Shell* getShell() const{return passingShell;}
 
-    ~Cell(){ }; //if (passingShell != nullptr)  delete passingShell;
+    // Setters
+    void destroyOccupier(){occupierType= OccupierType::None, tankId = -1, wall=Wall(), mine=false;};
+    void setTank(int tank) { tankId=tank ;occupierType = OccupierType::Tank; }
+	void setShell(Shell* shell){passingShell = shell;}
+
+    void damageWall();
+    void detectCollision(Shell* other);
 };
+
 #endif

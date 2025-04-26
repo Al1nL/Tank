@@ -1,6 +1,3 @@
-//
-// Created by admin on 4/17/2025.
-//
 #include "../headers/WinAlgorithm.h"
 
 Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
@@ -12,13 +9,14 @@ Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
 
     if(!player->isWaitingToReverse() && player->getWaitingToReverse())
          return Action::MoveBack;
-    // Dodge incoming shells
+
+    // Try to dodge danger
     if (willBeHitIn(player->getPos().first,player->getPos().second,1,board)) {
 		Action res=checkForEscape(board);
         if(res!=Action::None)
           return res;
         return Action::Shoot;
-        }
+    }
     if(willBeHitIn(player->getPos().first,player->getPos().second,2,board)) {
 		Action res;
         res =calculateBestEscapeRotation(board);
@@ -58,8 +56,6 @@ WinAlgorithm::~WinAlgorithm() {
     player = nullptr;
 }
 
-
-
 Direction WinAlgorithm::simulateRotation(Action act,const GameBoard& board) {
     Direction currentDir = player->getDir();
     player->rotate(act);
@@ -86,8 +82,8 @@ bool WinAlgorithm::shouldShootOpponent(OppData opp, const GameBoard& board) {
     // Predict opponent's next 2 positions
     vector<pair<int,int>> predictedPositions = {
         {targetRow, targetCol},  // Current position
-        {player->wrap(targetRow + dr, board.getHeight()), player->wrap(targetCol + dc, board.getWidth())}, // Next position
-        {player->wrap(targetRow + dr*2, board.getHeight()), player->wrap(targetCol + dc*2, board.getWidth())} // Position after next
+        {player->wrap(targetRow + dr, board.getHeight()), player->wrap(targetCol + dc, board.getWidth())} // Next position
+        //,{player->wrap(targetRow + dr*2, board.getHeight()), player->wrap(targetCol + dc*2, board.getWidth())} // Position after next
     };
 
     // Check if we're aligned with any predicted position
@@ -97,7 +93,6 @@ bool WinAlgorithm::shouldShootOpponent(OppData opp, const GameBoard& board) {
             return true;
         }
     }
-
     return false;
 }
 
@@ -144,11 +139,8 @@ Action WinAlgorithm::calculateBestEscapeRotation(const GameBoard& board) {
         player->rotate(rotation);
         Direction newDir = player->getDir();
 
-
 		option = rotationOption(rotation, newDir, currentDir, board);
         options.push_back(option);
-
-
     }
 
     // Sort options by safety score (descending)
@@ -159,14 +151,6 @@ Action WinAlgorithm::calculateBestEscapeRotation(const GameBoard& board) {
         return a.safetyScore > b.safetyScore;
     });
 
-    // Return the best safe rotation
-//    for (const auto& option : options) {
-//        if (option.safetyScore > 0) {
-//            return option.action;
-//        }
-//    }
-
-    // If all options are bad, choose the least dangerous
     return options.empty() ? Action::None : options[0].action;
 }
 
@@ -197,26 +181,6 @@ RotationOption WinAlgorithm::rotationOption(Action rotation, Direction newDir,Di
         player->setDir(oldDir);
         return option;
 }
-
-//int WinAlgorithm::countOpenSpaceInDirection(Direction dir, const GameBoard& board, int steps) {
-//    auto [row, col] = player->getPos();
-//    auto [dr, dc] = offsets[static_cast<int>(dir)];
-//
-//    int openCount = 0;
-//
-//    for (int i = 1; i <= steps; i++) {
-//        int newRow = player->wrap(row + dr * i, board.getHeight());
-//        int newCol = player->wrap(col + dc * i, board.getWidth());
-//
-//        if (isOccupierFree({newRow, newCol}, board)){ //&&!willBeHitIn(newRow, newCol, i, board)) {
-//            openCount++;
-//        } else {
-//            break; // Stop counting when we hit an obstacle
-//        }
-//    }
-//
-//    return openCount;
-//}
 
 int WinAlgorithm::countOpenSpaceInDirection(const GameBoard& board, pair<int,int> pos) {
   	auto [row, col] = pos;

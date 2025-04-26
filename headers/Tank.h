@@ -11,7 +11,6 @@
 // Forward declarations
 class GameBoard;
 class Algorithm;
-class Shell;
 struct OppData;
 
 using namespace std;
@@ -23,36 +22,38 @@ class Tank: public Movable {
     bool waitingForBackward = false;
     int backwardCooldown = 0; // Number of turns left until backward move happens
     bool cancelBackward = false; // Whether the backward move was canceled
-    bool movedBackwardLast = false; // to know if immediate next back is allowed
+    bool movedBackwardLast = false; // Indicates immediate next back is allowed
     vector<Shell*> firedShells;
     Algorithm* moveDecider = nullptr;
-   // bool preparingToShoot=false; //used in Alg
 
 public:
-    Tank();  // Default constructor
     Tank(int id, pair<int,int> position);
+    ~Tank();
 
     Action decideNextAction(const OppData& opp,const GameBoard& board);
     void rotate(Action);
+    bool isValidMove(const GameBoard& board,Action action);
+    int getID() const { return id; }
+
+    // Shells and shoot related functions
     void deleteShell(Shell*);
     void addShell(int rows, int cols);
-    bool isValidMove(const GameBoard& board,Action action);
+    int getShootCooldown() const {return shootCooldown;}
     const vector<Shell*> getFiredShells() const { return firedShells; }
     int getRemainingShells()  const {return remainingShells;}
-    int isWaitingToShoot() const { return shootCooldown>0; }
+    bool isWaitingToShoot() const { return shootCooldown>0; }
+
+    // Back movements related functions
     int getBackwardCooldown()  const { return backwardCooldown; }
     int getWaitingToReverse() const { return waitingForBackward; }
-    bool isWaitingToReverse() const { return waitingForBackward && backwardCooldown>0; }
     bool getMovedBackwardLast() const { return movedBackwardLast; }
-    int getShootCooldown() const {return shootCooldown;}
+    bool isWaitingToReverse() const { return waitingForBackward && backwardCooldown>0; }
 
-    int getID() const { return id; }
-    //setter
+    // Setters
     void setWaitingForBackward(bool wait) { waitingForBackward = wait; }
     void setBackwardCooldown(int b) { backwardCooldown = b; }
     void setMovedBackwardLast(bool moved) { movedBackwardLast = moved; }
     void setShootCooldown(int s) { shootCooldown = s; }
-
-    ~Tank();
 };
+
 #endif

@@ -13,7 +13,7 @@ void GameManager::processStep() {
   	pair<int, int> pos;
 	moveFiredShells();
 
-    if(p1Lost || p2Lost) { return;}
+    if(isGameOver()) { return;}
 
     Action action1 = player1->decideNextAction({player2->getPos(),player2->getDir()}, *currGameState);
     Action action2 = player2->decideNextAction({player1->getPos(),player1->getDir()}, *currGameState);
@@ -25,7 +25,7 @@ void GameManager::processStep() {
         logTankAction(*player1, action1, false);  // log bad move
     }
 
-    if(p1Lost || p2Lost) { return;}
+    if(isGameOver()) { return;}
     if (player2->isValidMove(*currGameState, action2)) {
         applyAction(*player2,action2);
     }
@@ -33,6 +33,7 @@ void GameManager::processStep() {
         logTankAction(*player2, action2, false);
     }
 
+    // Updating cool\countdowns
     if(!player1->getRemainingShells() && !player1->getRemainingShells()) {
       stepsSinceNoShells++;
     }
@@ -85,7 +86,7 @@ void GameManager::applyAction(Tank& tank, Action action) {
                 tank.setShootCooldown(4);
                 Shell* last = tank.getFiredShells().back();
                 currGameState->updateFiredShells(last,true);
-                currGameState->at(last->getPos()).setShell(last);
+                const_cast<Cell&>(currGameState->at(last->getPos())).setShell(last);
             }
             tank.setMovedBackwardLast(false);
             break;
@@ -126,9 +127,9 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
         // Store the previous position
         auto oldPos = shell->getPos();
         previousPositions[shell] = oldPos;
-        Cell& c=currGameState->at(oldPos);
+        Cell& c=const_cast<Cell&>(currGameState->at(oldPos));
         if(c.getOccupierType() == OccupierType::Tank){
-            currGameState->at(oldPos).getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
+            c.getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
             break;
         }
         if(!isGameOver()){
@@ -172,8 +173,6 @@ void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells, m
 }
 
 void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells) {
-
-
     // Identify all collisions
 	set<pair<Shell*, Shell*>> collisions;
 	for (auto& [shell, prevPos] : previousPositions) {
@@ -186,7 +185,6 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
     	}
 	}
 
-
 	for (auto& [shell1, shell2] : collisions) {
     	logShellsCollided({shell1, shell2});
 
@@ -198,7 +196,7 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
     // Handle shells at the same cell
     for (auto& [pos, shells] : cellToShells) {
       	if(shells.empty()) continue;
-        Cell& cell = currGameState->at(pos);
+        Cell& cell = const_cast<Cell&>(currGameState->at(pos));
         vector<Shell*> validShells;
         if (shells.size() > 1) {
             // Multiple shells go to same cell: check if the shells are in the remaining allShells
@@ -213,43 +211,36 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
             validShells.push_back(shells[0]);
 
         if (validShells.size() > 1) {
-            std::cerr<<"[DEBUG] multi-shell collision in cell\n";
-
             // All valid shells in the same cell will be destroyed
-            logShellsCollided(validShells);  // Log collision between shells
-            for (Shell* s : validShells) {
-
-                removeShellFromGame(s, allShells, cellToShells);
-            continue;
-            }
+            logShellsCollided(validShells);  // Log collision between shells besides one to handle situation of other objects in the cell
         }
-        // Handle other collisions
-        if (!validShells.empty()) {
-            Shell* shell = validShells[0];
-            OccupierType occ = cell.getOccupierType();
-            pair<int,int> oldPos = shell->getPos();
+        Shell* shell = validShells[0];
+        for (size_t i = 1; i < validShells.size(); ++i) {
+            removeShellFromGame(validShells[i], allShells, cellToShells);
+        }
+        OccupierType occ = cell.getOccupierType();
+        pair<int,int> oldPos = shell->getPos();
 
-            switch (occ) {
-                case OccupierType::Tank:
-                    cell.getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
-                    removeShellFromGame(shell, allShells,cellToShells);
-                    break;
-                case OccupierType::Wall:
-                    // If the cell contains a wall, damage it
-                    cell.damageWall();
-                    if (cell.getOccupierType() == OccupierType::None)
-                        logWallDestroyed(pos);
-                    else
-                        logWallWeakened(pos);
-                    break;
-            }
-            if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
-              cell.setShell(nullptr);
-            else{
-                // Update the board with the new position of the shell
-                currGameState->updateBoard(oldPos, pos);
-                shell->setPos(pos);
-            }
+        switch (occ) {
+            case OccupierType::Tank:
+                cell.getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
+                removeShellFromGame(shell, allShells,cellToShells);
+                break;
+            case OccupierType::Wall:
+                // If the cell contains a wall, damage it
+                cell.damageWall();
+                if (cell.getOccupierType() == OccupierType::None)
+                    logWallDestroyed(pos);
+                else
+                    logWallWeakened(pos);
+                break;
+        }
+        if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
+          cell.setShell(nullptr);
+        else{
+            // Update the board with the new position of the shell
+            currGameState->updateBoard(oldPos, pos);
+            shell->setPos(pos);
         }
     }
 }
@@ -257,7 +248,6 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 void GameManager::moveFiredShells() {
     vector<Shell*> allShells = currGameState->getAllFiredShells(); //why not get fom tanks - this will requrie additional handaling
     // Create a map to store previous positions of shells
-
 
     for (int step = 0; step < 2; step++) {
       	map<Shell*, pair<int, int>> previousPositions;
@@ -272,7 +262,6 @@ void GameManager::moveFiredShells() {
 
 bool GameManager::isGameOver(){
 	if( p1Lost || p2Lost || stepsSinceNoShells == 40) return true;
-
     return false;
 }
 
@@ -362,7 +351,7 @@ void GameManager::logWallDestroyed(const pair<int, int>& pos) {
 void GameManager::logTankOnMine(Tank& tank, const pair<int, int>& pos){
   string log = "Tank " + to_string(tank.getID()) + " stepped on mine | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
   tank.getID() == 1 ? p1Lost =true: p2Lost = true;
-    currGameState->at(tank.getPos()).destroyOccupier();
+  const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
 
     logs.push_back(log);
     cerr << log << endl;
@@ -372,7 +361,7 @@ void GameManager::logTankOnTank(Tank& tank, const pair<int, int>& pos) {
   string log = "Tank " + to_string(tank.getID()) + " collided with another Tank | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
   p1Lost =true;
   p2Lost = true;
-    currGameState->at(tank.getPos()).destroyOccupier();
+  const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
 
     logs.push_back(log);
     cerr << log << endl;
@@ -396,7 +385,7 @@ void GameManager::logShellHitTank(Shell& shell, Tank& tank) {
   string log = "Shell of Tank " + to_string(shell.getOwnerID()) + " hit Tank " + to_string(tank.getID()) + " | Position: " + tank.getPosition();
     logs.push_back(log);
 	tank.getID() == 1 ? p1Lost=true : p2Lost =true;
-    currGameState->at(tank.getPos()).destroyOccupier();
+    const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
     cerr << log << endl;
 }
 

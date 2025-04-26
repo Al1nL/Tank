@@ -1,9 +1,5 @@
 ﻿#include "../headers/Cell.h"
 
-//Cell::Cell(GameManager& gameManager) : occupierType(OccupierType::None), passingShell(nullptr),gameManager(gameManager) {
-//
-//}
-
 Cell::Cell(OccupierType o,pair<int,int> poss, int tank){
   occupierType = o;
   pos = poss;
@@ -12,7 +8,8 @@ Cell::Cell(OccupierType o,pair<int,int> poss, int tank){
   }
   else if (o == OccupierType::Mine) {
     mine=true;
-  }else if(o == OccupierType::Tank){
+  }
+  else if(o == OccupierType::Tank){
     tankId=tank;
   }
 }
@@ -27,37 +24,12 @@ void Cell::damageWall() {
     }
 }
 
-// Check if walkable
-bool Cell::isWalkable() const {
-    return occupierType == OccupierType::None;
-}
-
-// Get shell
-const Shell* Cell::getShell() const {
-    return passingShell;
-}
-
-// Set shell
-void Cell::setShell(Shell* s) {
-//    if (passingShell == nullptr)
-        passingShell = s;
-//    else
-//        detectCollision(s);
-}
-
 int Cell::getTank() {
   if (hasTank()) {
     return tankId;
   }
   return -1;
-
 }
-
-// Handle collision
-//void Cell::detectCollision(Shell* other) {
-//    gameManager.logShellsCollided(*passingShell, *other);
-//    passingShell = nullptr;
-//}
 
 void Cell::detectCollision(Shell* other) {
     delete passingShell; // Clean up current shell

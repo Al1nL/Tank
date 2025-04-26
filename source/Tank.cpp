@@ -3,13 +3,12 @@
 #include "../headers/BasicMoveAlgorithm.h"
 
 Tank::Tank(int id, pair<int,int> position) : id(id), Movable(position, id==1 ? Direction::L : Direction::R,1) {
-          // Assign initial direction based on id
-        moveDecider = id==1 ?(Algorithm*) new WinAlgorithm(this) : (Algorithm*) new BasicMoveAlgorithm(this);
-        //id == 1 ? : new WinAlgorithm(this)
+    // Assign initial direction based on id
+    moveDecider = id==1 ?(Algorithm*) new WinAlgorithm(this) : (Algorithm*) new BasicMoveAlgorithm(this);
 }
 
 void Tank::addShell(int rows, int cols){
-    firedShells.push_back(new Shell({wrap(pos.first+offsets[dir].first,rows), wrap(pos.second+offsets[dir].second,cols)},dir,id));
+    firedShells.push_back(new Shell(nextStep(true,rows,cols),dir,id));
 }
 
 void Tank::rotate(Action action) {
@@ -34,11 +33,8 @@ void Tank::rotate(Action action) {
 }
 
 void Tank::deleteShell(Shell* shellToDelete) {
-//    auto it = find(firedShells.begin(), firedShells.end(), shellToDelete);
-//    if (it != firedShells.end()) {
-        delete shellToDelete;
-        firedShells.erase(remove(firedShells.begin(), firedShells.end(), shellToDelete), firedShells.end());
-//    }
+    delete shellToDelete;
+    firedShells.erase(remove(firedShells.begin(), firedShells.end(), shellToDelete), firedShells.end());
 }
 
 Action Tank::decideNextAction(const OppData& opp, const GameBoard& board) {
@@ -59,7 +55,7 @@ bool Tank::isValidMove(const GameBoard& board,Action action){
         	newPos = nextStep(true,board.getHeight(), board.getWidth());
             occupier = board.at(newPos).getOccupierType();
 			return occupier != OccupierType::Wall;
-        case Action::MoveBack: //if not waiting for backward move - it's legal?
+        case Action::MoveBack:
           	newPos = nextStep(false, board.getHeight(), board.getWidth());
             occupier = board.at(newPos).getOccupierType();
         	return !isWaitingToReverse() && occupier != OccupierType::Wall;
@@ -67,22 +63,17 @@ bool Tank::isValidMove(const GameBoard& board,Action action){
         case Action::Rotate1_4Left:
         case Action::Rotate1_8Right:
         case Action::Rotate1_4Right:
-            return !isWaitingToReverse();  // Rotation is always valid
+            return !isWaitingToReverse();
         default:
             return false;
     }
 }
 
-
 Tank::~Tank(){
-
-//  auto end = ;
   for (auto it = firedShells.begin(); it != firedShells.end();) {
           // If we find the shell in the vector
-        delete *it;              // Delete the shell (free memory)
+        delete *it;              // Delete the shell
         it = firedShells.erase(it);   // Remove the pointer from the vector
-
   }
-
   delete moveDecider;
 }

@@ -1,9 +1,9 @@
 ﻿#ifndef SHELL_H
 #define SHELL_H
 #include <utility>
-class GameBoard;
 #include "Movable.h"
-class Cell;
+
+class GameBoard;
 
 class Shell : public Movable {
     int ownerID=-1;
@@ -14,14 +14,15 @@ public:
     Shell(pair<int,int> pos, Direction dir, int ownerID) : Movable(pos,dir,2), ownerID(ownerID) {
         offset = offsets[dir];
     };
-    Shell();
-    ~Shell(){};
+    ~Shell()=default;
 
-    // void move(GameBoard& board);
-    // bool goThroughCells(const vector<Cell*> cells);
+    // Getters
     int getOwnerID() const { return ownerID; }
-    bool isNewShell() {return isNew;}
+    const pair<int,int> getOffset() const { return offset; }
+
+    // Just made shell indicator
+    bool isNewShell() const {return isNew;}
     void setNotNewShell() {isNew=false;}
-    pair<int,int> getOffset() const { return offset; }
 };
+
 #endif

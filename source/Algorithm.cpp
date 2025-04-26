@@ -41,7 +41,7 @@ bool Algorithm::shouldShootOpponent(const pair<int,int>& opponentPos)  {
 
 bool Algorithm::canMoveFwd(const GameBoard& board)  {
     auto [r, c] = player->nextStep(true, board.getHeight(), board.getWidth());
-    return isOccupierFree({r, c}, board) && !willBeHitIn(r,c,1,board);
+    return isOccupierFree({r, c}, board);//&& !willBeHitIn(r,c,1,board);
 }
 
 bool Algorithm::canMoveBack(const GameBoard& board)  {
@@ -102,23 +102,6 @@ bool Algorithm::willBeHitIn(int row, int col, int t, const GameBoard& board) {
     }
     return false;
 }
-
-
-bool Algorithm::isInDanger(const GameBoard& board) {
-    pair<int,int> curr = player->getPos();
-    pair<int,int> newP;
-    for(int i =1; i<= 2; i++){
-        for (const auto& pos : offsets) {
-            newP = {curr.first + pos.first*i, curr.second + pos.second*i};
-            newP = {player->wrap(newP.first, board.getHeight()), player->wrap(newP.second, board.getWidth())};
-            if(board.at(newP).hasShell()){
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 
 bool Algorithm::isAlignedWithOpponent(pair<int, int> opponentPos) {
     auto [r,c]=player->getPos();

@@ -10,4 +10,5 @@ struct OppData{
     const pair<int,int> opponentPos;
     const Direction opponentDir;
 };
+
 #endif //OPPDATA_H

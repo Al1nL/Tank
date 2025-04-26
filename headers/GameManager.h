@@ -7,10 +7,12 @@
 #include <utility>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "Action.h"
 #include "GameBoard.h"
 #include "Tank.h"
-#include <string>
+#include "Shell.h"
+#include "Cell.h"
 #include "OppData.h"
 
 // Forward declarations
@@ -32,23 +34,35 @@ class GameManager{
 
     bool p1Lost=false;
     bool p2Lost=false;
-    // int gameOverSign=0; // 0: no game over, 1: one of players won(indicate by who lost), 2: Tie
+
+    // Shell movement helpers
+    void moveFiredShells();
+    void removeShellFromGame(Shell* shell, vector<Shell*>& allShells,map<pair<int, int>, vector<Shell*>> &cellToShells);
+    void handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells);
+    void updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells);
+    const vector<Shell*> getAllFiredShells();
 
   public:
     GameManager();
     GameManager(string filepath);
+    ~GameManager();
 
+    // Game control
     void runGameLoop();
     void processStep();
-    bool validateAction(Tank tank, Action action);
-    bool validateShoot(Tank tank);
-    void applyAction(Tank& tank, Action action);
-    void goThroughCells(vector<Cell*> cells, Shell* shell);
-
     bool isGameOver();
     void countDown();
     void endGame();
 
+    // Actions and validations
+    bool validateAction(Tank tank, Action action);
+    bool validateShoot(Tank tank);
+    void applyAction(Tank& tank, Action action);
+
+    //for debug
+    void printCurrentState();
+
+private:  // Logging
     void logTankAction(const Tank& tank, Action action, bool success);
     void logGameOver(int winner);
     void logGameStart();
@@ -62,19 +76,6 @@ class GameManager{
 	void writeOutput();
     string actionToString(Action);
     string directionToString(Direction);
-
-    //void moveFiredShells(Tank&);
-    //for debug
-    void printCurrentState();
-
-    void moveFiredShells();
-    void removeShellFromGame(Shell* shell, vector<Shell*>& allShells,map<pair<int, int>, vector<Shell*>> &cellToShells);
-    void handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells);
-    vector<Shell*> getAllFiredShells();
-    void updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells);
-
-
-
-
 };
+
 #endif

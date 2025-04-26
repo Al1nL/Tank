@@ -15,7 +15,6 @@ GameBoard::GameBoard(string filePath){
     	throw invalid_argument("Failed to read board dimensions");
 	}
 
-
     // Initialize the grid with the given dimensions
     grid.resize(height, vector<Cell*>(width));
 
@@ -100,6 +99,7 @@ GameBoard::GameBoard(string filePath){
       throw invalid_argument("Player missing. Game can not start!");
     }
 }
+
 void GameBoard::updateFiredShells(Shell* shell, bool add)
 {
   if(!add){
@@ -128,8 +128,7 @@ pair<int, int> GameBoard::getTankPosition(int tankId) {
 
 void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos){
   	Cell old = *grid[oldPos.first][oldPos.second];
-//	OccupierType oldOccupier=  grid[oldPos.first][oldPos.second]->getOccupierType();
-//
+
     if(newPos.first == -1 && newPos.second == -1){
         grid[oldPos.first][oldPos.second]->destroyOccupier();
         return;
@@ -144,7 +143,7 @@ void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos){
     }
 }
 
-vector<Cell*> GameBoard::getCells(pair<int,int> from, pair<int,int> offset,int amount){
+const vector<Cell*> GameBoard::getCells(pair<int,int> from, pair<int,int> offset,int amount){
   vector<Cell*> cells;
   for(int i =1; i <= amount; i++){
     	cells.push_back(grid[positiveMod(from.first+offset.first*i, height)][positiveMod(from.second+offset.second*i, width)]);

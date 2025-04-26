@@ -192,7 +192,6 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
             	cellToShells.insert({p,{}});
           	}
              cellToShells[p].push_back(shell);
-//             c.setShell(nullptr);
              currGameState->updateBoard(oldPos, p);
              shell->setPos(p);
         }
@@ -362,12 +361,6 @@ void GameManager::endGame() {
 	writeOutput();
 }
 
-/**
- * @brief Prints the current state of the board.
- */
-void GameManager::printCurrentState() {
-	currGameState->printBoard();
-}
 // ------------------ Logging Functions ------------------
 
 /**

@@ -59,9 +59,6 @@ class GameManager{
     bool validateShoot(Tank tank);
     void applyAction(Tank& tank, Action action);
 
-    //for debug
-    void printCurrentState();
-
 private:  // Logging
     void logTankAction(const Tank& tank, Action action, bool success);
     void logGameOver(int winner);

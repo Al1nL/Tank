@@ -73,6 +73,7 @@ private:  // Logging
     void logShellHitTank(Shell& shell, Tank& tank);
     void logTankOnMine(Tank& tank, const pair<int, int>& pos);
     void logTankOnTank(Tank& tank, const pair<int, int>& pos);
+    void handleWallCollision(Cell& cell);
 	void writeOutput();
     string actionToString(Action);
     string directionToString(Direction);

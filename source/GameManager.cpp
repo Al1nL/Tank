@@ -2,49 +2,68 @@
 #include "../headers/Tank.h"
 #include "../headers/GameBoard.h"
 
-GameManager::GameManager(std::string filepath){
-  currGameState = new GameBoard(filepath);
-  player1 = new Tank(1, currGameState->getTankPosition(1));
-  player2 = new Tank(2, currGameState->getTankPosition(2));
-  logGameStart();
+/**
+ * @brief Constructor.
+ *
+ * Initializes the board and tanks.
+ * @param filepath Path to the file describing the initial board state.
+ */
+GameManager::GameManager(std::string filepath) {
+	currGameState = new GameBoard(filepath);
+	player1 = new Tank(1, currGameState->getTankPosition(1));
+	player2 = new Tank(2, currGameState->getTankPosition(2));
+	logGameStart();
 }
 
+/**
+ * @brief Processes a single step of the game: moves shells, tanks, and handles actions and collisions.
+ */
 void GameManager::processStep() {
-  	pair<int, int> pos;
+	pair<int, int> pos;
 	moveFiredShells();
 
-    if(isGameOver()) { return;}
+	if(isGameOver()) {
+		return;
+	}
 
-    Action action1 = player1->decideNextAction({player2->getPos(),player2->getDir()}, *currGameState);
-    Action action2 = player2->decideNextAction({player1->getPos(),player1->getDir()}, *currGameState);
+	Action action1 = player1->decideNextAction({player2->getPos(),player2->getDir()}, *currGameState);
+	Action action2 = player2->decideNextAction({player1->getPos(),player1->getDir()}, *currGameState);
 
-    // validate and execute
-    if (player1->isValidMove(*currGameState, action1)) {
-        applyAction(*player1,action1);
-    } else {
-        logTankAction(*player1, action1, false);  // log bad move
-    }
+	// validate and execute
+	if (player1->isValidMove(*currGameState, action1)) {
+		applyAction(*player1,action1);
+	} else {
+		logTankAction(*player1, action1, false);  // log bad move
+	}
 
-    if(isGameOver()) { return;}
-    if (player2->isValidMove(*currGameState, action2)) {
-        applyAction(*player2,action2);
-    }
-    else {
-        logTankAction(*player2, action2, false);
-    }
+	if(isGameOver()) {
+		return;
+	}
+	if (player2->isValidMove(*currGameState, action2)) {
+		applyAction(*player2,action2);
+	}
+	else {
+		logTankAction(*player2, action2, false);
+	}
 
-    // Updating cool\countdowns
-    if(!player1->getRemainingShells() && !player1->getRemainingShells()) {
-      stepsSinceNoShells++;
-    }
-    if(player1->getBackwardCooldown() > 0 && action1 != Action::MoveBack) {
-      player1->setBackwardCooldown(player1->getBackwardCooldown()-1);
-    }
-    if(player2->getBackwardCooldown() > 0 && action2 != Action::MoveBack) {
-      player2->setBackwardCooldown(player2->getBackwardCooldown()-1);
-    }
+	// Updating cool\countdowns
+	if(!player1->getRemainingShells() && !player1->getRemainingShells()) {
+		stepsSinceNoShells++;
+	}
+	if(player1->getBackwardCooldown() > 0 && action1 != Action::MoveBack) {
+		player1->setBackwardCooldown(player1->getBackwardCooldown()-1);
+	}
+	if(player2->getBackwardCooldown() > 0 && action2 != Action::MoveBack) {
+		player2->setBackwardCooldown(player2->getBackwardCooldown()-1);
+	}
 }
 
+/**
+ * @brief Applies the given action to the specified tank (assumes the action is valid).
+ *
+ * @param tank Reference to the tank to apply the action on.
+ * @param action The action to apply.
+ */
 void GameManager::applyAction(Tank& tank, Action action) {
   	pair<int,int> newPos = {-1,-1};
   //assuming its valid move
@@ -72,84 +91,88 @@ void GameManager::applyAction(Tank& tank, Action action) {
                 tank.setWaitingForBackward(true);
             }
 
-            break;
-        case Action::Rotate1_8Left:
-        case Action::Rotate1_8Right:
-        case Action::Rotate1_4Left:
-        case Action::Rotate1_4Right:
-            tank.rotate(action);
-            tank.setMovedBackwardLast(false);
-            break;
-        case Action::Shoot:
-            if (!tank.isWaitingToShoot()) {
-				tank.addShell(currGameState->getHeight(),currGameState->getWidth());
-                tank.setShootCooldown(4);
-                Shell* last = tank.getFiredShells().back();
-                currGameState->updateFiredShells(last,true);
-                const_cast<Cell&>(currGameState->at(last->getPos())).setShell(last);
-            }
-            tank.setMovedBackwardLast(false);
-            break;
-    }
+		break;
+	case Action::Rotate1_8Left:
+	case Action::Rotate1_8Right:
+	case Action::Rotate1_4Left:
+	case Action::Rotate1_4Right:
+		tank.rotate(action);
+		tank.setMovedBackwardLast(false);
+		break;
+	case Action::Shoot:
+		if (!tank.isWaitingToShoot()) {
+			tank.addShell(currGameState->getHeight(),currGameState->getWidth());
+			tank.setShootCooldown(4);
+			Shell* last = tank.getFiredShells().back();
+			currGameState->updateFiredShells(last,true);
+			const_cast<Cell&>(currGameState->at(last->getPos())).setShell(last);
+		}
+		tank.setMovedBackwardLast(false);
+		break;
+	}
 
-    int crash=0;
+	int crash=0;
 
-    if(action != Action::Shoot && tank.isWaitingToShoot())
-       tank.setShootCooldown(tank.getShootCooldown() -1);
-    if(newPos.first != -1){
-      if(currGameState->at(newPos).getOccupierType() == OccupierType::Mine){
-      	currGameState->updateBoard(newPos,newPos);
-      	crash=1;
-      }
-      else if(currGameState->at(newPos).getOccupierType() == OccupierType::Tank){
-        crash=2;
-      }
-        currGameState->updateBoard(tank.getPos(),newPos);
-        tank.setPos(newPos);
-    }
-    logTankAction(tank, action, true);
-    if(crash==1)
-        logTankOnMine(tank, newPos);
-    else if(crash==2)
-        logTankOnTank(tank, newPos);
+	if(action != Action::Shoot && tank.isWaitingToShoot())
+		tank.setShootCooldown(tank.getShootCooldown() -1);
+	if(newPos.first != -1) {
+		if(currGameState->at(newPos).getOccupierType() == OccupierType::Mine) {
+			currGameState->updateBoard(newPos,newPos);
+			crash=1;
+		}
+		else if(currGameState->at(newPos).getOccupierType() == OccupierType::Tank) {
+			crash=2;
+		}
+		currGameState->updateBoard(tank.getPos(),newPos);
+		tank.setPos(newPos);
+	}
+	logTankAction(tank, action, true);
+	if(crash==1)
+		logTankOnMine(tank, newPos);
+	else if(crash==2)
+		logTankOnTank(tank, newPos);
 
-    return;
+	return;
 }
 
-void GameManager::countDown(){
+/**
+ * @brief Increments the counter when no shells are left.
+ */
+void GameManager::countDown() {
 	if (player1->getRemainingShells() == 0 || player2->getRemainingShells() == 0) {
-          stepsSinceNoShells++;
+		stepsSinceNoShells++;
 	}
 }
 
+/**
+ * @brief Updates all shell positions, handling wall collisions if necessary.
+ *
+ * @param allShells Vector of all active shells.
+ * @param previousPositions Map storing each shell's previous position.
+ * @param cellToShells Map from a cell position to the list of shells that moved there.
+ */
 void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells) {
-    for (Shell* shell : allShells) {
-        // Store the previous position
-        auto oldPos = shell->getPos();
-        previousPositions[shell] = oldPos;
-        Cell& c=const_cast<Cell&>(currGameState->at(oldPos));
-        if(c.getOccupierType() == OccupierType::Tank){
-            c.getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
-            break;
-        }
-        if(!isGameOver()){
-            //check if the shell is newly created in a cell with a wall
-            if(c.getOccupierType() == OccupierType::Wall&& shell->isNewShell())
-            {
-                c.damageWall();
-                if (c.getOccupierType() == OccupierType::None)
-                    logWallDestroyed(oldPos);
-                else
-                    logWallWeakened(oldPos);
-            }
-            if(shell->isNewShell())
-              shell->setNotNewShell();
-            // Determine the next position for the shell
-            vector<Cell*> path = currGameState->getCells(shell->getPos(), shell->getOffset(), 1);
-            Cell* nextCell = path[0];
-            auto p = nextCell->getPos();
+	for (Shell* shell : allShells) {
+		// Store the previous position
+		auto oldPos = shell->getPos();
+		previousPositions[shell] = oldPos;
+		Cell& c=const_cast<Cell&>(currGameState->at(oldPos));
+		if(c.getOccupierType() == OccupierType::Tank) {
+			c.getTank() == 1 ? logShellHitTank(*shell, *player1) : logShellHitTank(*shell, *player2);
+			break;
+		}
+		if(!isGameOver()) {
+			//check if the shell is newly created in a cell with a wall
+			if(c.getOccupierType() == OccupierType::Wall&& shell->isNewShell())
+				handleWallCollision(c);
+			if(shell->isNewShell())
+				shell->setNotNewShell();
+			// Determine the next position for the shell
+			vector<Cell*> path = currGameState->getCells(shell->getPos(), shell->getOffset(), 1);
+			Cell* nextCell = path[0];
+			auto p = nextCell->getPos();
 
-            logShellMove(*shell, p);
+			logShellMove(*shell, p);
 
              // Store the shell in the new cell
             if(cellToShells.count(p) == 0)
@@ -163,7 +186,13 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
         }
     }
 }
-
+/**
+ * @brief Removes a shell from the board and game systems.
+ *
+ * @param shell Pointer to the shell to remove.
+ * @param allShells Vector of all active shells.
+ * @param cellToShells Map from a cell position to the list of shells.
+ */
 void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells, map<pair<int, int>, vector<Shell*>> &cellToShells) {
     if (shell) {
       // Deletes the shell from the vector
@@ -178,8 +207,18 @@ void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells, m
     }
 }
 
+/**
+ * @brief Handles collisions between shells and between shells and other objects.
+ *
+ * @param allShells Vector of all active shells.
+ * @param previousPositions Map storing each shell's previous position.
+ * @param step Current shell movement step (0 or 1).
+ * @param cellToShells Map from a cell position to the list of shells.
+ */
 void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells) {
-    // Identify all collisions
+	// Identify all collisions
+
+	// Identifies all head collision >< (2 shells passed each other)
 	set<pair<Shell*, Shell*>> collisions;
 	for (auto& [shell, prevPos] : previousPositions) {
     	for (auto& [otherShell, otherPrevPos] : previousPositions) {
@@ -198,14 +237,13 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
             }
     	}
 	}
-
+	// Remove from game systems to avoid looking at destroyed shells at the resst of the checks
 	for (auto& [shell1, shell2] : collisions) {
-    	logShellsCollided({shell1, shell2});
+		logShellsCollided({shell1, shell2});
 
-    	// Remove from game systems
-    	removeShellFromGame(shell1, allShells, cellToShells);
-    	removeShellFromGame(shell2, allShells, cellToShells);
-   }
+		removeShellFromGame(shell1, allShells, cellToShells);
+		removeShellFromGame(shell2, allShells, cellToShells);
+	}
 
     // Handle shells at the same cell
     for (auto& [pos, shells] : cellToShells) {
@@ -225,17 +263,19 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
         else //only 1 shell in this cell
             validShells.push_back(shells[0]);
 
+        Shell* shell = validShells[0];
+		OccupierType occ = cell.getOccupierType();
         if (validShells.size() > 1) {
             // All valid shells in the same cell will be destroyed
             collided = true;
             logShellsCollided(validShells);  // Log collision between shells besides one to handle situation of other objects in the cell
+            if(occ == OccupierType::Wall)
+				handleWallCollision(cell);
         }
-        Shell* shell = validShells[0];
+
         for (size_t i = 1; i < validShells.size(); ++i) {
             removeShellFromGame(validShells[i], allShells, cellToShells);
         }
-        OccupierType occ = cell.getOccupierType();
-        pair<int,int> oldPos = shell->getPos();
 
         switch (occ) {
             case OccupierType::Tank:
@@ -261,158 +301,255 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 //        }
     }
 }
-
+/**
+ * @brief Moves all fired shells two steps forward, handling their movement and collisions.
+ */
 void GameManager::moveFiredShells() {
-    vector<Shell*> allShells = currGameState->getAllFiredShells(); //why not get fom tanks - this will requrie additional handaling
-    // Create a map to store previous positions of shells
+	vector<Shell*> allShells = currGameState->getAllFiredShells();
+	// Create a map to store previous positions of shells
 
-    for (int step = 0; step < 2; step++) {
-      	map<Shell*, pair<int, int>> previousPositions;
-        map<pair<int, int>, vector<Shell*>> cellToShells;
-        // Update the position of all shells
-        updateShellPositions(allShells, previousPositions, cellToShells);
-        // Handle all possible collisions
-        if(isGameOver()) break;
-        handleShellCollision(allShells, previousPositions, step, cellToShells);
-    }
+	for (int step = 0; step < 2; step++) {
+		map<Shell*, pair<int, int>> previousPositions;
+		map<pair<int, int>, vector<Shell*>> cellToShells;
+		// Update the position of all shells
+		updateShellPositions(allShells, previousPositions, cellToShells);
+		// Handle all possible collisions
+		if(isGameOver()) break;
+		handleShellCollision(allShells, previousPositions, step, cellToShells);
+	}
 }
 
-bool GameManager::isGameOver(){
+/**
+ * @brief Checks if the game has ended due to tank loss or inactivity.
+ *
+ * @return True if the game is over, false otherwise.
+ */
+bool GameManager::isGameOver() {
 	if( p1Lost || p2Lost || stepsSinceNoShells == 40) return true;
-    return false;
+	return false;
 }
 
+/**
+ * @brief Finalizes the game, determines the winner, frees resources, and logs the result.
+ */
 void GameManager::endGame() {
-   p1Lost && !p2Lost ? logGameOver(2) : !p1Lost && p2Lost ? logGameOver(1) : logGameOver(-1);
-   delete player1;
-   delete player2;
-   delete currGameState;
-   writeOutput();
+	p1Lost && !p2Lost ? logGameOver(2) : !p1Lost && p2Lost ? logGameOver(1) : logGameOver(-1);
+	delete player1;
+	delete player2;
+	delete currGameState;
+	writeOutput();
 }
 
+/**
+ * @brief Prints the current state of the board.
+ */
 void GameManager::printCurrentState() {
-  currGameState->printBoard();
+	currGameState->printBoard();
 }
+// ------------------ Logging Functions ------------------
 
-//Log Functions
-
+/**
+ * @brief Converts an Action enum value to its corresponding string representation.
+ *
+ * @param action The action to convert.
+ * @return String representation of the action.
+ */
 string GameManager::actionToString(Action action) {
-    switch (action) {
-        case Action::MoveFwd: return "Move Forward";
-        case Action::MoveBack: return "Move Backward";
-        case Action::Rotate1_8Left: return "Rotate 1/8 Left";
-        case Action::Rotate1_4Left: return "Rotate 1/4 Left";
-        case Action::Rotate1_8Right: return "Rotate 1/8 Right";
-        case Action::Rotate1_4Right: return "Rotate 1/4 Right";
-        case Action::Shoot: return "Shoot";
-        default: return "Unknown Action";
-    }
+	switch (action) {
+	case Action::MoveFwd:
+		return "Move Forward";
+	case Action::MoveBack:
+		return "Move Backward";
+	case Action::Rotate1_8Left:
+		return "Rotate 1/8 Left";
+	case Action::Rotate1_4Left:
+		return "Rotate 1/4 Left";
+	case Action::Rotate1_8Right:
+		return "Rotate 1/8 Right";
+	case Action::Rotate1_4Right:
+		return "Rotate 1/4 Right";
+	case Action::Shoot:
+		return "Shoot";
+	default:
+		return "Unknown Action";
+	}
 }
 
+/**
+ * @brief Converts a Direction enum value to its corresponding string representation.
+ *
+ * @param dir The direction to convert.
+ * @return String representation of the direction.
+ */
 string GameManager::directionToString(Direction dir) {
-    switch (dir) {
-        case U:  return "U";
-        case UR: return "UR";
-        case R:  return "R";
-        case DR: return "DR";
-        case D:  return "D";
-        case DL: return "DL";
-        case L:  return "L";
-        case UL: return "UL";
-        default: return "Unknown";
-    }
+	switch (dir) {
+	case U:
+		return "U";
+	case UR:
+		return "UR";
+	case R:
+		return "R";
+	case DR:
+		return "DR";
+	case D:
+		return "D";
+	case DL:
+		return "DL";
+	case L:
+		return "L";
+	case UL:
+		return "UL";
+	default:
+		return "Unknown";
+	}
 }
 
+/**
+ * @brief Logs the start of the game with tank initial positions.
+ */
 void GameManager::logGameStart() {
-  string log = "Game Started!\n Player 1 | Position:" + player1->getPosition() + "\n Player 2 | Position:" + player2->getPosition();
-  logs.push_back(log);
-  cerr << log << endl;
-  }
+	string log = "Game Started!\n Player 1 | Position:" + player1->getPosition() + "\n Player 2 | Position:" + player2->getPosition();
+	logs.push_back(log);
+	cerr << log << endl;
+}
 
+/**
+ * @brief Logs the end of the game and the winner (or tie).
+ * @param winner Tank ID of the winner (or -1 if tie).
+ */
 void GameManager::logGameOver(int winner) {
-  string win = (winner == -1) ? "End in tie" :  "The winner is: " + to_string(winner);
-  logs.push_back("Game Over!\n" + win);
+	string win = (winner == -1) ? "End in tie" :  "The winner is: " + to_string(winner);
+	logs.push_back("Game Over!\n" + win);
 }
 
+/**
+ * @brief Logs a tank's attempted action and its validity - bad or good.
+ *
+ * @param tank The tank performing the action.
+ * @param action The action attempted.
+ * @param success Whether the action was successful.
+ */
 void GameManager::logTankAction(const Tank& tank, Action action, bool success) {
-    string result = success ? "Good move" : "Bad move",log;
-    if(action == Action::MoveFwd||action == Action::MoveBack) {
-      log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " facing direction "+ directionToString(tank.getDir()) + " | Updated Position: " + tank.getPosition();
-    }
-    else
-      {
-        log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " facing direction "+ directionToString(tank.getDir()) + " | Position: " + tank.getPosition();
-      }
-    logs.push_back(log);
-    cerr << log << endl;
+	string result = success ? "Good move" : "Bad move",log;
+	if(action == Action::MoveFwd||action == Action::MoveBack) {
+		log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " facing direction "+ directionToString(tank.getDir()) + " | Updated Position: " + tank.getPosition();
+	}
+	else
+	{
+		log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " facing direction "+ directionToString(tank.getDir()) + " | Position: " + tank.getPosition();
+	}
+	logs.push_back(log);
+	cerr << log << endl;
 }
 
+/**
+ * @brief Logs the movement of a shell to a new position.
+ *
+ * @param shell The shell being moved.
+ * @param newPos The new position.
+ */
 void GameManager::logShellMove(Shell& shell, pair<int,int> newPos) {
-   string log ="Shell of Tank " +to_string(shell.getOwnerID()) + " is Moving in direction: " + directionToString(shell.getDir()) + " | Updated Position: [" + to_string(newPos.first)+", "+to_string(newPos.second)+"]";
-    logs.push_back(log);
-    cerr << log << endl;
+	string log ="Shell of Tank " +to_string(shell.getOwnerID()) + " is Moving in direction: " + directionToString(shell.getDir()) + " | Updated Position: [" + to_string(newPos.first)+", "+to_string(newPos.second)+"]";
+	logs.push_back(log);
+	cerr << log << endl;
 }
 
+/**
+ * @brief Logs that a wall has been weakened.
+ *
+ * @param pos Position of the weakened wall.
+ */
 void GameManager::logWallWeakened(const pair<int, int>& pos) {
-  string log ="Wall Weakened | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
-    logs.push_back(log);
-    cerr << log << endl;
+	string log ="Wall Weakened | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
+	logs.push_back(log);
+	cerr << log << endl;
 }
 
+/**
+ * @brief Logs that a wall has been destroyed.
+ *
+ * @param pos Position of the destroyed wall.
+ */
 void GameManager::logWallDestroyed(const pair<int, int>& pos) {
-  string log = "Wall Destroyed | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
-    logs.push_back(log);
-    cerr << log << endl;
+	string log = "Wall Destroyed | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
+	logs.push_back(log);
+	cerr << log << endl;
 }
 
-void GameManager::logTankOnMine(Tank& tank, const pair<int, int>& pos){
-  string log = "Tank " + to_string(tank.getID()) + " stepped on mine | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
-  tank.getID() == 1 ? p1Lost =true: p2Lost = true;
-  const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
+/**
+ * @brief Logs that a wall has been destroyed.
+ *
+ * @param tank Reference to the tank that stepped on a mine
+ * @param pos Position of the collision
+ */
+void GameManager::logTankOnMine(Tank& tank, const pair<int, int>& pos) {
+	string log = "Tank " + to_string(tank.getID()) + " stepped on mine | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
+	tank.getID() == 1 ? p1Lost =true: p2Lost = true;
+	const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
 
-    logs.push_back(log);
-    cerr << log << endl;
+	logs.push_back(log);
+	cerr << log << endl;
 }
 
+/**
+ * @brief Logs that a wall has been destroyed.
+ *
+ * @param tank Reference to the tank that stepped on another tank
+ * @param pos Position of the collision.
+ */
 void GameManager::logTankOnTank(Tank& tank, const pair<int, int>& pos) {
-  string log = "Tank " + to_string(tank.getID()) + " collided with another Tank | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
-  p1Lost =true;
-  p2Lost = true;
-  const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
+	string log = "Tank " + to_string(tank.getID()) + " collided with another Tank | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
+	p1Lost =true;
+	p2Lost = true;
+	const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
 
-    logs.push_back(log);
-    cerr << log << endl;
+	logs.push_back(log);
+	cerr << log << endl;
 }
-
+/**
+ * @brief Logs that a wall has been destroyed.
+ *
+ * @param shells Vector of pointers to all the shells that collided
+ * @param pos Position of the collision.
+ */
 void GameManager::logShellsCollided(vector<Shell*> shells) {  //todo: change?? case where more than 2 collided what to do?
-  string log = "Shell Collision: Number of shells: "+to_string(shells.size())+"| belong to tank: ";
-  vector<int> ids;
-  for(auto shell : shells) {
-    if(find(ids.begin(), ids.end(),shell->getOwnerID()) == ids.end()){
-		log+= to_string(shell->getOwnerID()) +" ";
-    	ids.push_back(shell->getOwnerID());
-      }
-  }
-  log += "| Position: " + shells[0]->getPosition();
-    logs.push_back(log);
-    cerr << log << endl;
+	string log = "Shell Collision: Number of shells: "+to_string(shells.size())+"| belong to tank: ";
+	vector<int> ids;
+	for(auto shell : shells) {
+		if(find(ids.begin(), ids.end(),shell->getOwnerID()) == ids.end()) {
+			log+= to_string(shell->getOwnerID()) +" ";
+			ids.push_back(shell->getOwnerID());
+		}
+	}
+	log += "| Position: " + shells[0]->getPosition();
+	logs.push_back(log);
+	cerr << log << endl;
 }
 
+/**
+ * @brief Logs that a wall has been destroyed.
+ *
+ * @param shell Reference to a shell that hit a tank
+ * @tank The tank that's been hit.
+ */
 void GameManager::logShellHitTank(Shell& shell, Tank& tank) {
-  string log = "Shell of Tank " + to_string(shell.getOwnerID()) + " hit Tank " + to_string(tank.getID()) + " | Position: " + tank.getPosition();
-    logs.push_back(log);
+	string log = "Shell of Tank " + to_string(shell.getOwnerID()) + " hit Tank " + to_string(tank.getID()) + " | Position: " + tank.getPosition();
+	logs.push_back(log);
 	tank.getID() == 1 ? p1Lost=true : p2Lost =true;
-    const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
-    cerr << log << endl;
+	const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
+	cerr << log << endl;
 }
 
+/**
+ * @brief Writes all logs to 'GameLog.txt' file
+ */
 void GameManager::writeOutput() {
-    logFile.open("GameLog.txt", std::ios::out | std::ios::trunc);  // Open file in write mode and truncate it
-    // Write the logs to the file
-    for (const auto& entry : logs) {
-        logFile << entry << "\n";
-    }
+	logFile.open("GameLog.txt", std::ios::out | std::ios::trunc);  // Open file in write mode and truncate it
+	// Write the logs to the file
+	for (const auto& entry : logs) {
+		logFile << entry << "\n";
+	}
 
-    logFile.close();  // Close the file
-    logs.clear();  // Clear the log entries
+	logFile.close();  // Close the file
+	logs.clear();  // Clear the log entries
 }

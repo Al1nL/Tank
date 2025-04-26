@@ -294,13 +294,22 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
         if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
           cell.setShell(nullptr);
         else if(collided){ removeShellFromGame(shell, allShells,cellToShells);}
-//        else{
-//            // Update the board with the new position of the shell
-//            currGameState->updateBoard(oldPos, pos);
-//
-//        }
     }
 }
+
+/**
+@brief Handles collision with a wall, applying damage and logging the result.*
+@param cell The wall cell that was collided with.
+*/
+void GameManager::handleWallCollision(Cell& cell) {
+    pair<int, int> pos = cell.getPos();
+    cell.damageWall();
+    if (cell.getOccupierType() == OccupierType::None)
+        logWallDestroyed(pos);
+    else
+        logWallWeakened(pos);
+}
+
 /**
  * @brief Moves all fired shells two steps forward, handling their movement and collisions.
  */

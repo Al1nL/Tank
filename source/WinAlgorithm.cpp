@@ -54,9 +54,6 @@ Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
         return Action::MoveFwd;
     }
 
-//    if (canMoveBack(board)) {
-//        return Action::MoveBack;
-//    }
     // Default fallback action
     Action r =calculateBestEscapeRotation(board);
     return r == Action::None ? Action::Rotate1_8Right : r;

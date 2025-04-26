@@ -41,7 +41,7 @@ bool Algorithm::shouldShootOpponent(const pair<int,int>& opponentPos)  {
 
 bool Algorithm::canMoveFwd(const GameBoard& board)  {
     auto [r, c] = player->nextStep(true, board.getHeight(), board.getWidth());
-    return isOccupierFree({r, c}, board);//&& !willBeHitIn(r,c,1,board);
+    return isOccupierFree({r, c}, board) && !willBeHitIn(r,c,1,board);
 }
 
 bool Algorithm::canMoveBack(const GameBoard& board)  {

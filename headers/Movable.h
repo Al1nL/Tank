@@ -29,8 +29,9 @@ class Movable{
     int wrap(int value, int size) { return (value % size + size) % size; }; // wrap-around edges
 
     pair<int,int> nextStep(bool forward,const int rows, const int cols){
-        int newRow = wrap(pos.first + perStep * offsets[dir].first , rows);
-        int newCol = wrap(pos.second + perStep * offsets[dir].second ,cols);
+        int side = forward ? 1: -1;
+        int newRow = wrap(pos.first + perStep * offsets[dir].first*side , rows);
+        int newCol = wrap(pos.second + perStep * offsets[dir].second*side ,cols);
         return {newRow , newCol };
       }
 

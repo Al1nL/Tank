@@ -33,13 +33,13 @@ Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
     }
 
     // Shoot if aligned and safe
-    if (shouldShootOpponent(opp, board)&&  !player->isWaitingToShoot()) { //(currentDir == desiredDir
+    if ((shouldShootOpponent(opp, board)) &&  !player->isWaitingToShoot()) { //(currentDir == desiredDir
         return Action::Shoot;
     }
     if (currentDir != desiredDir) {
          Action rotate= determineRotation(currentDir, desiredDir);
          RotationOption option = rotationOption(rotate, desiredDir, currentDir ,board);
-         if(option.canMove && option.safetyScore > 0)
+         if(option.canMove || canShootAfterRotate(desiredDir,board, opp) && option.safetyScore > 0)
          	return rotate;
     }
 
@@ -48,8 +48,13 @@ Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
     if ((currentRow != targetRow || currentCol != targetCol) && isOccupierFree(next, board)) {
         return Action::MoveFwd;
     }
+
+//    if (canMoveBack(board)) {
+//        return Action::MoveBack;
+//    }
     // Default fallback action
-    return Action::Rotate1_8Right;
+    Action r =calculateBestEscapeRotation(board);
+    return r == Action::None ? Action::Rotate1_8Right : r;
 }
 
 WinAlgorithm::~WinAlgorithm() {
@@ -83,13 +88,12 @@ bool WinAlgorithm::shouldShootOpponent(OppData opp, const GameBoard& board) {
     vector<pair<int,int>> predictedPositions = {
         {targetRow, targetCol},  // Current position
         {player->wrap(targetRow + dr, board.getHeight()), player->wrap(targetCol + dc, board.getWidth())} // Next position
-        //,{player->wrap(targetRow + dr*2, board.getHeight()), player->wrap(targetCol + dc*2, board.getWidth())} // Position after next
+        ,{player->wrap(targetRow + dr*2, board.getHeight()), player->wrap(targetCol + dc*2, board.getWidth())} // Position after next
     };
 
     // Check if we're aligned with any predicted position
     for (const auto& [r, c] : predictedPositions) {
-        if ((currentRow == r || currentCol == c) &&
-            player->getDir() == calculateDirection(currentRow, currentCol, r, c)) {
+        if (player->getDir() == calculateRealDirection(currentRow, currentCol, r, c)) {
             return true;
         }
     }
@@ -126,6 +130,19 @@ bool WinAlgorithm::willHaveTimeToShootAfterRotation(Action rotation, const GameB
     return false;
 }
 
+// New helper function
+bool WinAlgorithm::canShootAfterRotate(Direction targetDir, const GameBoard& board, OppData opp) {
+    // Simulate rotation
+    Direction currentDir = player->getDir();
+    player->setDir(targetDir);
+
+    // Check if we could shoot after rotating
+    bool canShoot = shouldShootOpponent(opp, board);
+
+    // Restore direction
+    player->setDir(currentDir);
+    return canShoot;
+}
 
 Action WinAlgorithm::calculateBestEscapeRotation(const GameBoard& board) {
     Direction currentDir = player->getDir();
@@ -146,7 +163,7 @@ Action WinAlgorithm::calculateBestEscapeRotation(const GameBoard& board) {
     // Sort options by safety score (descending)
     sort(options.begin(), options.end(), [](const RotationOption& a, const RotationOption& b) {
         if (a.safetyScore == b.safetyScore) {
-            return a.canMove > b.canMove; // Prefer options that allow movement
+            return a.canMove > b.canMove ? true : a.action != Action::Rotate1_8Right; // Prefer options that allow movement
         }
         return a.safetyScore > b.safetyScore;
     });
@@ -160,7 +177,6 @@ RotationOption WinAlgorithm::rotationOption(Action rotation, Direction newDir,Di
         option.newDir = newDir;
         player->setDir(newDir);
         option.canMove = canMoveFwd(board);
-
         // Calculate safety score (higher is better)
         option.safetyScore = 0;
 
@@ -195,3 +211,20 @@ int WinAlgorithm::countOpenSpaceInDirection(const GameBoard& board, pair<int,int
   	}
         return openCount;
   }
+
+ Direction WinAlgorithm::calculateRealDirection(int currRow, int currCol, int targetRow, int targetCol) {
+    int rowDiff = targetRow - currRow;
+    int colDiff = targetCol - currCol;
+
+    // Normalize differences to identify direction only if strictly aligned
+    if (rowDiff > 0 && colDiff == 0) return Direction::D;    // Down
+    if (rowDiff < 0 && colDiff == 0) return Direction::U;    // Up
+    if (rowDiff == 0 && colDiff > 0) return Direction::R;    // Right
+    if (rowDiff == 0 && colDiff < 0) return Direction::L;    // Left
+    if (rowDiff == colDiff && rowDiff > 0) return Direction::DR; // Down-Right (strict diagonal)
+    if (rowDiff == -colDiff && rowDiff > 0) return Direction::DL; // Down-Left (strict diagonal)
+    if (rowDiff == colDiff && rowDiff < 0) return Direction::UR; // Up-Right (strict diagonal)
+    if (rowDiff == -colDiff && rowDiff < 0) return Direction::UL; // Up-Left (strict diagonal)
+
+    return Direction::None; // None for non-aligned movement
+ }

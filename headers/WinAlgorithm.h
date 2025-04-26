@@ -26,6 +26,8 @@ class WinAlgorithm : public Algorithm {
     // Shoot related
 	bool shouldShootOpponent(OppData opp,const GameBoard& board);
 	bool willHaveTimeToShootAfterRotation(Action rotation, const GameBoard& board);
+	bool canShootAfterRotate(Direction targetDir, const GameBoard& board, OppData opp);
+	Direction calculateRealDirection(int currRow, int currCol, int targetRow, int targetCol);
 
     public:
    	explicit WinAlgorithm(Tank* p):Algorithm(p) {}

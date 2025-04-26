@@ -60,7 +60,7 @@ void GameManager::applyAction(Tank& tank, Action action) {
             tank.setMovedBackwardLast(false);
             break;
         case Action::MoveBack:
-           if (tank.getMovedBackwardLast() || (tank.getBackwardCooldown() == 0 && tank.isWaitingToReverse())){
+           if (tank.getMovedBackwardLast() || (tank.getBackwardCooldown() == 0 && tank.getWaitingToReverse())){
                 // Instant backward move
                newPos=tank.nextStep(false,currGameState->getHeight(),currGameState->getWidth());
                 tank.setWaitingForBackward(false);
@@ -157,6 +157,9 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
             	cellToShells.insert({p,{}});
           	}
              cellToShells[p].push_back(shell);
+             c.setShell(nullptr);
+             currGameState->updateBoard(oldPos, p);
+             shell->setPos(p);
         }
     }
 }
@@ -164,8 +167,11 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
 void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells, map<pair<int, int>, vector<Shell*>> &cellToShells) {
     if (shell) {
       // Deletes the shell from the vector
-      	pair<int, int> pos = {shell->getPos().first + offsets[shell->getDir()].first,shell->getPos().second + offsets[shell->getDir()].second};
-        cellToShells[pos].erase(remove(cellToShells[pos].begin(), cellToShells[pos].end(), shell), cellToShells[pos].end());
+      	pair<int, int> pos = shell->getPos();
+        if (cellToShells.count(pos)) {
+            auto& shellsInCell = cellToShells[pos];
+            shellsInCell.erase(remove(shellsInCell.begin(), shellsInCell.end(), shell), shellsInCell.end());
+        }
         allShells.erase(remove(allShells.begin(), allShells.end(), shell), allShells.end());
         currGameState->updateFiredShells(shell,false);
         shell->getOwnerID() == 1 ? player1->deleteShell(shell) : player2->deleteShell(shell);
@@ -177,11 +183,19 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 	set<pair<Shell*, Shell*>> collisions;
 	for (auto& [shell, prevPos] : previousPositions) {
     	for (auto& [otherShell, otherPrevPos] : previousPositions) {
-        	if (otherShell != shell &&
-           	 	otherPrevPos == shell->getPos() &&
-            	prevPos == otherShell->getPos() && collisions.find({shell, otherShell}) != collisions.end() && collisions.find({otherShell, shell}) != collisions.end()){
-            		collisions.insert({shell, otherShell});
-        	}
+        	if (otherShell == shell) continue;
+
+            // Check if shells are moving towards each other (head-on collision)
+            bool isHeadOn = (prevPos == otherShell->getPos() && otherPrevPos == shell->getPos());
+
+            // Also check if shells are now in the same position (direct hit)
+            bool isSamePos = (shell->getPos() == otherShell->getPos());
+
+            if ((isHeadOn || isSamePos) &&
+                collisions.find({shell, otherShell}) == collisions.end() &&
+                collisions.find({otherShell, shell}) == collisions.end()) {
+                collisions.insert({shell, otherShell});
+            }
     	}
 	}
 
@@ -195,6 +209,7 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 
     // Handle shells at the same cell
     for (auto& [pos, shells] : cellToShells) {
+      	bool collided = false;
       	if(shells.empty()) continue;
         Cell& cell = const_cast<Cell&>(currGameState->at(pos));
         vector<Shell*> validShells;
@@ -212,6 +227,7 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 
         if (validShells.size() > 1) {
             // All valid shells in the same cell will be destroyed
+            collided = true;
             logShellsCollided(validShells);  // Log collision between shells besides one to handle situation of other objects in the cell
         }
         Shell* shell = validShells[0];
@@ -237,11 +253,12 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
         }
         if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
           cell.setShell(nullptr);
-        else{
-            // Update the board with the new position of the shell
-            currGameState->updateBoard(oldPos, pos);
-            shell->setPos(pos);
-        }
+        else if(collided){ removeShellFromGame(shell, allShells,cellToShells);}
+//        else{
+//            // Update the board with the new position of the shell
+//            currGameState->updateBoard(oldPos, pos);
+//
+//        }
     }
 }
 

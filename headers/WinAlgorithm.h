@@ -25,7 +25,6 @@ class WinAlgorithm : public Algorithm {
 
     // Shoot related
 	bool shouldShootOpponent(OppData opp,const GameBoard& board);
-	bool willHaveTimeToShootAfterRotation(Action rotation, const GameBoard& board);
 
     public:
    	explicit WinAlgorithm(Tank* p):Algorithm(p) {}

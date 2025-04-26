@@ -103,7 +103,7 @@ void GameManager::applyAction(Tank& tank, Action action) {
                 tank.setWaitingForBackward(true);
             }
 
-		break;
+			break;
 	case Action::Rotate1_8Left:
 	case Action::Rotate1_8Right:
 	case Action::Rotate1_4Left:
@@ -121,8 +121,9 @@ void GameManager::applyAction(Tank& tank, Action action) {
 		}
 		tank.setMovedBackwardLast(false);
 		break;
+	case Action::None:
+		break;
 	}
-
 	int crash=0;
 
 	if(action != Action::Shoot && tank.isWaitingToShoot())
@@ -226,7 +227,7 @@ void GameManager::removeShellFromGame(Shell* shell, vector<Shell*>& allShells, m
  * @param step Current shell movement step (0 or 1).
  * @param cellToShells Map from a cell position to the list of shells.
  */
-void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells) {
+void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,map<pair<int, int>, vector<Shell*>> &cellToShells) {
 	// Identify all collisions
 
 	// Identifies all head collision >< (2 shells passed each other)
@@ -301,6 +302,9 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
                 else
                     logWallWeakened(pos);
                 break;
+			case OccupierType::Mine:
+			case OccupierType::None:
+				break;
         }
         if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
           cell.setShell(nullptr);
@@ -335,7 +339,7 @@ void GameManager::moveFiredShells() {
 		updateShellPositions(allShells, previousPositions, cellToShells);
 		// Handle all possible collisions
 		if(isGameOver()) break;
-		handleShellCollision(allShells, previousPositions, step, cellToShells);
+		handleShellCollision(allShells, previousPositions, cellToShells);
 	}
 }
 

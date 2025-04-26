@@ -42,7 +42,7 @@ GameBoard::GameBoard(string filePath) {
 			continue;
 		}
 		for (int col = 0; col < width; ++col) {
-			char symbol = (col < line.size()) ? line[col] : ' ';
+			char symbol = (col < static_cast<int>(line.size())) ? line[col] : ' ';
 
 			// Set the occupier type and initialize the cell accordingly
 			switch (symbol) {
@@ -83,7 +83,7 @@ GameBoard::GameBoard(string filePath) {
 			if (errorLog) errorLog << "Column " << col << " in row " << row << " is missing. Filling with empty cell.\n";
 		}
 
-		if(line.size() > width) {
+		if(line.size() > static_cast<size_t>(width)) {
 			hasErrors = true;
 			if (errorLog) errorLog << line.size() - width << " Excess Columns " << "in row " << row << " found. Ignoring it.\n";
 		}

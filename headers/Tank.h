@@ -16,7 +16,7 @@ struct OppData;
 using namespace std;
 
 class Tank: public Movable {
-    int id;
+    int id = -1;
     int remainingShells = 16;
     int shootCooldown = 0;
     bool waitingForBackward = false;

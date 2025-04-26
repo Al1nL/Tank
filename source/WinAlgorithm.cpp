@@ -44,7 +44,7 @@ Action WinAlgorithm::nextMove(const OppData opp,const GameBoard& board) {
     if (currentDir != desiredDir) {
          Action rotate= determineRotation(currentDir, desiredDir);
          RotationOption option = rotationOption(rotate, desiredDir, currentDir ,board);
-         if(option.canMove || canShootAfterRotate(desiredDir,board, opp) && option.safetyScore > 0)
+         if((option.canMove || canShootAfterRotate(desiredDir,board, opp)) && option.safetyScore > 0)
          	return rotate;
     }
 
@@ -141,7 +141,6 @@ bool WinAlgorithm::canShootAfterRotate(Direction targetDir, const GameBoard& boa
  */
 Action WinAlgorithm::calculateBestEscapeRotation(const GameBoard& board) {
 	Direction currentDir = player->getDir();
-	auto [row, col] = player->getPos();
 
 	vector<RotationOption> options;
 	RotationOption option;

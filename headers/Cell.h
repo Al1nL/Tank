@@ -51,7 +51,7 @@ public:
     // Getters
     int getTank();
     const pair<int,int> getPos() const {return pos;}
-    const OccupierType getOccupierType() const { return occupierType; }
+    OccupierType getOccupierType() const { return occupierType; }
     const Shell* getShell() const{return passingShell;}
 
     // Setters

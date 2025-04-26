@@ -9,7 +9,7 @@
  * @param id Tank's ID (1 or 2).
  * @param position Initial (row, column) position.
  */
-Tank::Tank(int id, pair<int,int> position) : id(id), Movable(position, id==1 ? Direction::L : Direction::R,1) {
+Tank::Tank(int id, pair<int,int> position) : Movable(position, id==1 ? Direction::L : Direction::R,1), id(id) {
 	// Assign initial game algo and direction based on id
 	moveDecider = id==1 ?(Algorithm*) new WinAlgorithm(this) : (Algorithm*) new BasicMoveAlgorithm(this);
 }
@@ -46,6 +46,7 @@ void Tank::rotate(Action action) {
 	case Action::MoveFwd:
 	case Action::MoveBack:
 	case Action::Shoot:
+	case Action::None:
 		break;
 	}
 }

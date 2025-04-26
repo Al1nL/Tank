@@ -38,7 +38,7 @@ class Movable{
     // Getters
     const string getPosition() const {return "[" + to_string(pos.first) + "," + to_string(pos.second) + "]";}
 	  const pair<int,int> getPos() const {return pos;}
-    const Direction getDir() const { return dir; }
+    Direction getDir() const { return dir; }
     int getSteps() const { return perStep; }
 
     // Setters

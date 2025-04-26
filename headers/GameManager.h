@@ -38,7 +38,7 @@ class GameManager{
     // Shell movement helpers
     void moveFiredShells();
     void removeShellFromGame(Shell* shell, vector<Shell*>& allShells,map<pair<int, int>, vector<Shell*>> &cellToShells);
-    void handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,int step,map<pair<int, int>, vector<Shell*>> &cellToShells);
+    void handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,map<pair<int, int>, vector<Shell*>> &cellToShells);
     void updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells);
     const vector<Shell*> getAllFiredShells();
 

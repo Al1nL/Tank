@@ -3,13 +3,14 @@ CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -Werror -pedantic
 
 # Project files
-SRC_DIR = src
-SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+SRC_DIR = source
+SRC_FILES = $(wildcard $(SRC_DIR)/*.cpp) tanks_game.cpp
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,obj/%.o,$(SRC_FILES))
 HEADER_FILES = $(wildcard headers/*.h)
 
 # Main target
-TARGET = tank_battle
+TARGET = tanks_game
+OBJS = tanks_game.o
 
 # Rules
 all: $(TARGET)

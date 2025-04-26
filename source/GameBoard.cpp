@@ -211,32 +211,57 @@ GameBoard::~GameBoard() {
  * - ' ' for empty cells
  */
 void GameBoard::printBoard() {
-	OccupierType occupier;
-	Cell* c;
-	for (int row = 0; row < height; ++row) {
-		for (int col = 0; col < width; ++col) {
-			c = grid[row][col];
-			if(c->hasShell()) {
-				cout << "S";
-				continue;
-			}
-			occupier=  c->getOccupierType();
+    stringstream boardState;
+    OccupierType occupier;
+    Cell* c;
 
-			switch (occupier) {
-			case OccupierType::Tank:
-				cout << c->getTank();
-				break;
-			case OccupierType::Wall:
-				cout << "#";
-				break;
-			case OccupierType::None:
-				cout << " ";
-				break;
-			case OccupierType::Mine:
-				cout << "@";
-				break;
-			}
-		}
-		cout <<endl;
-	}
+    for (int row = 0; row < height; ++row) {
+        for (int col = 0; col < width; ++col) {
+            c = grid[row][col];
+            if(c->hasShell()) {
+                boardState << "S";
+                continue;
+            }
+            occupier = c->getOccupierType();
+
+            switch (occupier) {
+            case OccupierType::Tank:
+                boardState << c->getTank();
+                break;
+            case OccupierType::Wall:
+                boardState << "#";
+                break;
+            case OccupierType::None:
+                boardState << " ";
+                break;
+            case OccupierType::Mine:
+                boardState << "@";
+                break;
+            }
+        }
+        boardState << "\n";
+    }
+
+    // Store the complete board state
+    boardStates.push_back(boardState.str());
+}
+
+void GameBoard::writeBoardStates() {
+    std::ofstream outFile("gameStepsVis.txt");
+    if (!outFile.is_open()) {
+        std::cerr << "Error: Could not open file for writing!" << std::endl;
+        return;
+    }
+
+    // Write header
+    outFile << "=== GAME BOARD STATES ===\n\n";
+
+    // Write each board state with turn number
+    for (size_t i = 0; i < boardStates.size(); ++i) {
+        outFile << "Turn " << (i + 1) << ":\n";
+        outFile << boardStates[i] << "\n";
+    }
+
+    outFile.close();
+    boardStates.clear(); // Clear logs after writing
 }

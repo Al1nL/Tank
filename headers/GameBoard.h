@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include "Cell.h"
+#include <sstream>
 
 class Shell;
 using namespace std;
@@ -16,7 +17,7 @@ class GameBoard{
     int height=0;
     vector<vector<Cell*>> grid;
     vector<Shell*> allFiredShells;
-
+    vector<string> boardStates;
 public:
     GameBoard();
     GameBoard(string filePath);
@@ -38,6 +39,7 @@ public:
     }
     //for debug
     void printBoard();
+    void writeBoardStates();
 };
 
 #endif

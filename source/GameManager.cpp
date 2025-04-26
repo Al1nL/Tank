@@ -15,6 +15,18 @@ GameManager::GameManager(std::string filepath) {
 	logGameStart();
 }
 
+void GameManager::runGameLoop(){
+  	// Main game loop
+    while (!isGameOver()) {
+        // Update game state
+        processStep();
+        currGameState->printBoard();
+    }
+
+    // Log game over and results
+    endGame();
+}
+
 /**
  * @brief Processes a single step of the game: moves shells, tanks, and handles actions and collisions.
  */
@@ -180,7 +192,7 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
             	cellToShells.insert({p,{}});
           	}
              cellToShells[p].push_back(shell);
-             c.setShell(nullptr);
+//             c.setShell(nullptr);
              currGameState->updateBoard(oldPos, p);
              shell->setPos(p);
         }
@@ -343,6 +355,7 @@ bool GameManager::isGameOver() {
  */
 void GameManager::endGame() {
 	p1Lost && !p2Lost ? logGameOver(2) : !p1Lost && p2Lost ? logGameOver(1) : logGameOver(-1);
+    currGameState->writeBoardStates();
 	delete player1;
 	delete player2;
 	delete currGameState;
@@ -419,7 +432,6 @@ string GameManager::directionToString(Direction dir) {
 void GameManager::logGameStart() {
 	string log = "Game Started!\n Player 1 | Position:" + player1->getPosition() + "\n Player 2 | Position:" + player2->getPosition();
 	logs.push_back(log);
-	cerr << log << endl;
 }
 
 /**
@@ -448,7 +460,6 @@ void GameManager::logTankAction(const Tank& tank, Action action, bool success) {
 		log = "Tank " + to_string(tank.getID()) + ": " + result + " - Action: " + actionToString(action)+ " facing direction "+ directionToString(tank.getDir()) + " | Position: " + tank.getPosition();
 	}
 	logs.push_back(log);
-	cerr << log << endl;
 }
 
 /**
@@ -460,7 +471,6 @@ void GameManager::logTankAction(const Tank& tank, Action action, bool success) {
 void GameManager::logShellMove(Shell& shell, pair<int,int> newPos) {
 	string log ="Shell of Tank " +to_string(shell.getOwnerID()) + " is Moving in direction: " + directionToString(shell.getDir()) + " | Updated Position: [" + to_string(newPos.first)+", "+to_string(newPos.second)+"]";
 	logs.push_back(log);
-	cerr << log << endl;
 }
 
 /**
@@ -471,7 +481,6 @@ void GameManager::logShellMove(Shell& shell, pair<int,int> newPos) {
 void GameManager::logWallWeakened(const pair<int, int>& pos) {
 	string log ="Wall Weakened | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
 	logs.push_back(log);
-	cerr << log << endl;
 }
 
 /**
@@ -482,7 +491,6 @@ void GameManager::logWallWeakened(const pair<int, int>& pos) {
 void GameManager::logWallDestroyed(const pair<int, int>& pos) {
 	string log = "Wall Destroyed | Position: [" + to_string(pos.first) + ", " + to_string(pos.second) + "]";
 	logs.push_back(log);
-	cerr << log << endl;
 }
 
 /**
@@ -497,7 +505,6 @@ void GameManager::logTankOnMine(Tank& tank, const pair<int, int>& pos) {
 	const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
 
 	logs.push_back(log);
-	cerr << log << endl;
 }
 
 /**
@@ -513,7 +520,6 @@ void GameManager::logTankOnTank(Tank& tank, const pair<int, int>& pos) {
 	const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
 
 	logs.push_back(log);
-	cerr << log << endl;
 }
 /**
  * @brief Logs that a wall has been destroyed.
@@ -532,7 +538,6 @@ void GameManager::logShellsCollided(vector<Shell*> shells) {  //todo: change?? c
 	}
 	log += "| Position: " + shells[0]->getPosition();
 	logs.push_back(log);
-	cerr << log << endl;
 }
 
 /**
@@ -546,7 +551,6 @@ void GameManager::logShellHitTank(Shell& shell, Tank& tank) {
 	logs.push_back(log);
 	tank.getID() == 1 ? p1Lost=true : p2Lost =true;
 	const_cast<Cell&>(currGameState->at(tank.getPos())).destroyOccupier();
-	cerr << log << endl;
 }
 
 /**

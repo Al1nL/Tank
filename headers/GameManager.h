@@ -45,7 +45,7 @@ class GameManager{
   public:
     GameManager();
     GameManager(string filepath);
-    ~GameManager();
+    ~GameManager(){}
 
     // Game control
     void runGameLoop();

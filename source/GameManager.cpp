@@ -215,7 +215,7 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
   }
   for(auto [shell, pos] : toMoveShells){
     bool erase = find(oldPositions.begin(),oldPositions.end(),pos) == oldPositions.end();
-    currGameState->updateBoard(shell->getPos(), pos);
+    currGameState->updateBoard(shell->getPos(), pos,erase);
     shell->setPos(pos);
   }
 }

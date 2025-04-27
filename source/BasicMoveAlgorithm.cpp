@@ -33,8 +33,6 @@ Action BasicMoveAlgorithm::nextMove(OppData opp,const GameBoard& board) {
     if (canMoveFwd(board)) {
         return Action::MoveFwd;
     }
-    if (canMoveBack(board)) {
-        return Action::MoveBack;
-    }
+
     return Action::Rotate1_8Right;
 }

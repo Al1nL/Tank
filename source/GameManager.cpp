@@ -8,11 +8,25 @@
  * Initializes the board and tanks.
  * @param filepath Path to the file describing the initial board state.
  */
-GameManager::GameManager(std::string filepath) {
-	currGameState = new GameBoard(filepath);
+GameManager::GameManager(string filePath) {
+	currGameState = new GameBoard(filePath);
 	player1 = new Tank(1, currGameState->getTankPosition(1));
 	player2 = new Tank(2, currGameState->getTankPosition(2));
+    outputFile=  getPureFilename(filePath);//(file name only, no path, no extension)
+    outputFile ="output_" + outputFile + ".txt";
 	logGameStart();
+}
+string GameManager::getPureFilename(const string& filepath) {
+    // Remove path
+    size_t lastSlash = filepath.find_last_of("/\\");
+    string filename = (lastSlash == std::string::npos) ? filepath : filepath.substr(lastSlash + 1);
+
+    // Remove extension
+    size_t lastDot = filename.find_last_of(".");
+    if (lastDot != std::string::npos) {
+        filename = filename.substr(0, lastDot);
+    }
+    return filename;
 }
 
 void GameManager::runGameLoop(){
@@ -165,7 +179,7 @@ void GameManager::countDown() {
  * @param cellToShells Map from a cell position to the list of shells that moved there.
  */
 void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells) {
-	for (Shell* shell : allShells) {
+  for (Shell* shell : allShells) {
 		// Store the previous position
 		auto oldPos = shell->getPos();
 		previousPositions[shell] = oldPos;
@@ -196,7 +210,7 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
              currGameState->updateBoard(oldPos, p);
              shell->setPos(p);
         }
-    }
+  }
 }
 /**
  * @brief Removes a shell from the board and game systems.
@@ -306,9 +320,9 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 			case OccupierType::None:
 				break;
         }
-        if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
-          cell.setShell(nullptr);
-        else if(collided){ removeShellFromGame(shell, allShells,cellToShells);}
+//        if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
+//          cell.setShell(nullptr); else
+         if(collided){ removeShellFromGame(shell, allShells,cellToShells);}
     }
 }
 
@@ -358,7 +372,7 @@ bool GameManager::isGameOver() {
  */
 void GameManager::endGame() {
 	p1Lost && !p2Lost ? logGameOver(2) : !p1Lost && p2Lost ? logGameOver(1) : logGameOver(-1);
-    currGameState->writeBoardStates();
+    currGameState->writeBoardStates(outputFile);
 	delete player1;
 	delete player2;
 	delete currGameState;
@@ -551,10 +565,11 @@ void GameManager::logShellHitTank(Shell& shell, Tank& tank) {
 }
 
 /**
- * @brief Writes all logs to 'GameLog.txt' file
+ * @brief Writes all logs to outputFile file
  */
 void GameManager::writeOutput() {
-	logFile.open("GameLog.txt", std::ios::out | std::ios::trunc);  // Open file in write mode and truncate it
+
+	ofstream logFile(outputFile, std::ios::out | std::ios::trunc);  // Open file in write mode and truncate it
 	// Write the logs to the file
 	for (const auto& entry : logs) {
 		logFile << entry << "\n";

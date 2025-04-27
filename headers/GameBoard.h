@@ -39,7 +39,7 @@ public:
     }
     //for debug
     void printBoard();
-    void writeBoardStates();
+    void writeBoardStates(string);
 };
 
 #endif

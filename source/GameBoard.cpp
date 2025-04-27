@@ -246,8 +246,8 @@ void GameBoard::printBoard() {
     boardStates.push_back(boardState.str());
 }
 
-void GameBoard::writeBoardStates() {
-    std::ofstream outFile("gameStepsVis.txt");
+void GameBoard::writeBoardStates(string fileName) {
+    std::ofstream outFile("gameSteps_"+fileName+".txt");
     if (!outFile.is_open()) {
         std::cerr << "Error: Could not open file for writing!" << std::endl;
         return;

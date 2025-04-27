@@ -30,7 +30,7 @@ class GameManager{
     int stepCounter=0;
     int stepsSinceNoShells = 0;
     vector<string> logs;
-    ofstream logFile;
+    string outputFile;
 
     bool p1Lost=false;
     bool p2Lost=false;
@@ -41,9 +41,8 @@ class GameManager{
     void handleShellCollision(vector<Shell*>& allShells, map<Shell*,pair<int,int>>& previousPositions,map<pair<int, int>, vector<Shell*>> &cellToShells);
     void updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells);
     const vector<Shell*> getAllFiredShells();
-
+    string getPureFilename(const string& filepath);
   public:
-    GameManager();
     GameManager(string filepath);
     ~GameManager(){}
 

@@ -33,7 +33,7 @@ public:
 
     // Update and helper methods
     void updateFiredShells(Shell* s,bool add);
-    void updateBoard(pair<int,int> oldPos, pair<int,int> newPos);
+    void updateBoard(pair<int,int> oldPos, pair<int,int> newPos, bool erase = true);
     int positiveMod(int dividend, int divisor) const{ //like wrap at Movable
         return ((dividend % divisor) + divisor) % divisor;
     }

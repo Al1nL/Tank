@@ -179,6 +179,8 @@ void GameManager::countDown() {
  * @param cellToShells Map from a cell position to the list of shells that moved there.
  */
 void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pair<int, int>>& previousPositions, map<pair<int, int>, vector<Shell*>>& cellToShells) {
+  vector<pair<Shell*, pair<int,int>>> toMoveShells;
+  vector<pair<int, int>> oldPositions;
   for (Shell* shell : allShells) {
 		// Store the previous position
 		auto oldPos = shell->getPos();
@@ -207,9 +209,14 @@ void GameManager::updateShellPositions(vector<Shell*>& allShells, map<Shell*, pa
             	cellToShells.insert({p,{}});
           	}
              cellToShells[p].push_back(shell);
-             currGameState->updateBoard(oldPos, p);
-             shell->setPos(p);
+             toMoveShells.push_back({shell,p});
+             oldPositions.push_back(oldPos);
         }
+  }
+  for(auto [shell, pos] : toMoveShells){
+    bool erase = find(oldPositions.begin(),oldPositions.end(),pos) == oldPositions.end();
+    currGameState->updateBoard(shell->getPos(), pos);
+    shell->setPos(pos);
   }
 }
 /**
@@ -320,8 +327,8 @@ void GameManager::handleShellCollision(vector<Shell*>& allShells, map<Shell*,pai
 			case OccupierType::None:
 				break;
         }
-//        if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
-//          cell.setShell(nullptr); else
+        if (find(allShells.begin(), allShells.end(), shell) == allShells.end())
+          cell.setShell(nullptr); else
          if(collided){ removeShellFromGame(shell, allShells,cellToShells);}
     }
 }

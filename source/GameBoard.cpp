@@ -152,7 +152,7 @@ pair<int, int> GameBoard::getTankPosition(int tankId) {
  * @param oldPos The original position of the object.
  * @param newPos The new position of the object. If (-1, -1), the object is removed.
  */
-void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos) {
+void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos, bool erase) {
 	Cell old = *grid[oldPos.first][oldPos.second];
 
 	if(newPos.first == -1 && newPos.second == -1) {
@@ -165,7 +165,7 @@ void GameBoard::updateBoard(pair<int,int> oldPos, pair<int,int> newPos) {
 	}
 	else if(old.hasShell()) {
 		grid[newPos.first][newPos.second]->setShell(const_cast<Shell*>(old.getShell()));
-		grid[oldPos.first][oldPos.second]->setShell(nullptr);
+		if(erase) grid[oldPos.first][oldPos.second]->setShell(nullptr);
 	}
 }
 
@@ -247,7 +247,7 @@ void GameBoard::printBoard() {
 }
 
 void GameBoard::writeBoardStates(string fileName) {
-    std::ofstream outFile("gameSteps_"+fileName+".txt");
+    std::ofstream outFile("gameSteps_"+fileName);
     if (!outFile.is_open()) {
         std::cerr << "Error: Could not open file for writing!" << std::endl;
         return;

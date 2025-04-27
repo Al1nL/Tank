@@ -7,8 +7,9 @@
 ---
 
 ## Input Description
-- Col Row 
-- map layout 
+Col Row 
+
+map layout 
 
 **Map Symbols:**
 - `#` - Wall  
@@ -20,9 +21,15 @@
 
 ## Output Description
 Game Started!
+
 Player 1 | Position:[X,Y]
+
 Player 2 | Position:[X,Y]
+
 logs of all the things that happened in the game, including position
+
 for example: Tank [1|2]: [Action] | Position: [X,Y], Shell of Tank [1|2] is Moving in direction: [DIR] | Updated Position: [X,Y]
+
 Game Over!
-The winner is: [1|2]
+
+The winner is: [1|2] or tie
